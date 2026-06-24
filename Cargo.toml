@@ -1,0 +1,32 @@
+[package]
+name = "seventeenlands-rust"
+version = "0.1.0"
+edition = "2021"
+description = "Rust port of the 17Lands MTGA log client (uploads MTG Arena data to 17lands.com)"
+license = "GPL-3.0-only"
+
+[dependencies]
+# HTTP — blocking, lightweight; matches the synchronous tail-and-POST loop (spec §4).
+ureq = "2"
+# JSON — preserve_order keeps emitted object key order identical to Python dicts (spec §11.5).
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+# gzip for the add_game endpoint (spec §9).
+flate2 = "1"
+# Timestamp parsing + isoformat-compatible output (spec §5.8, §11.3).
+chrono = "0.4"
+# Line/timestamp regexes ported from the Python source (spec §5.5).
+regex = "1"
+# CLI: --log-file / --host / --token / --once (spec §2).
+clap = { version = "4", features = ["derive"] }
+# Token config at ~/.config/17l/config.toml (spec §5.1).
+toml = "0.8"
+# UUID v4 token validation (spec §11.6).
+uuid = { version = "1", features = ["v4"] }
+# Logging to stdout/stderr (no rotation; spec §2).
+log = "0.4"
+env_logger = "0.11"
+# Home / XDG config dir resolution (spec §5.1, §5.2).
+dirs = "5"
+
+[dev-dependencies]
