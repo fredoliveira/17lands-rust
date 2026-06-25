@@ -1,1 +1,4 @@
 /target
+
+# Raw MTGA logs — contain account id / screen name / token. NEVER commit.
+/local/
