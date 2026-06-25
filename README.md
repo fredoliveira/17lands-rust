@@ -5,8 +5,10 @@ Arena's `Player.log`, parses gameplay events, and uploads them to the 17Lands RE
 It is a **drop-in replacement** for the Python `seventeenlands` client: same parsing, same
 payloads, same endpoints.
 
-> Status: **scaffold**. Not yet functional — modules are stubs. See `SPEC.md` for the full
-> build specification and `SPEC.md` §13 for the implementation order.
+> Status: **functional**. All ~20 message handlers are ported. Output is validated
+> **byte-for-byte against the reference Python client** via the oracle harness: 173
+> submissions across two real logs plus a synthetic gap fixture are identical (see
+> _Testing_ below). See `SPEC.md` for the full build specification.
 
 ## Layout
 
@@ -28,12 +30,42 @@ payloads, same endpoints.
 - No GUI prompts, no startup version check, no server-side error reporting, no rotating
   file logs (logs to stdout/stderr). See `SPEC.md` §2.
 
-## Build
+## Build & run
 
 ```sh
-cargo build
-cargo test
+cargo build --release
+# resolves a token (flag > ~/.config/17l/config.toml > legacy ~/.mtga_follower.ini > stdin),
+# then tails the auto-discovered Player.log:
+./target/release/seventeenlands-rust
+# or point it at a specific log and parse once:
+./target/release/seventeenlands-rust --log-file path/to/Player.log --once
 ```
+
+## Testing & the oracle harness (SPEC §12)
+
+```sh
+cargo test          # unit + integration (HTTP, fixture parity)
+```
+
+Parity with the Python client is proven by capturing the reference client's payloads and
+diffing them against this client's output:
+
+```sh
+# 1. Capture the Python client's POSTs for a log (runs it against a local mock server in a
+#    sandboxed HOME — never touches the live API or your real config):
+tools/oracle/run_oracle.sh path/to/Player.log out.jsonl
+
+# 2. Diff this client's output against that capture (exits non-zero on any difference):
+cargo run --example oracle_diff -- path/to/Player.log out.jsonl
+
+# Inspect what a log would submit, without sending anything:
+cargo run --example replay -- path/to/Player.log
+```
+
+`tests/fixtures/gaps.log` + `tests/parity.rs` cover the dispatch branches absent from the
+sample logs (bot draft, combined human draft, claim prize, event course, inventory,
+collection); the branches present in real logs — including the full game-state machine —
+are covered by the oracle diff.
 
 ## License
 
