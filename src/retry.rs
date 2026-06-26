@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! Exponential-backoff retry (port of `retry_utils.py`).
 //!
 //! - initial 1s, ×2 each attempt, capped at 10min, max total 24h.
@@ -70,10 +72,10 @@ where
 
         std::thread::sleep(next_retry_delay);
         next_retry_delay = next_retry_delay.saturating_mul(2);
-        if let Some(max) = max_retry_delay {
-            if max < next_retry_delay {
-                next_retry_delay = max;
-            }
+        if let Some(max) = max_retry_delay
+            && max < next_retry_delay
+        {
+            next_retry_delay = max;
         }
     }
 }
@@ -83,10 +85,7 @@ where
 /// All errors reaching this layer are transport errors (the caller has already mapped
 /// non-2xx HTTP statuses to `Ok`), so every `Err` is retryable — mirroring Python's
 /// `_should_retry_error` returning `True` for `ConnectionError`.
-pub fn retry_api_call<T, E, F, V>(
-    callback: F,
-    response_validator: V,
-) -> Result<T, RetryError<E>>
+pub fn retry_api_call<T, E, F, V>(callback: F, response_validator: V) -> Result<T, RetryError<E>>
 where
     F: FnMut() -> Result<T, E>,
     V: Fn(&T) -> bool,

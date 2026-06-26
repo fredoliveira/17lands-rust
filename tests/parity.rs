@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! Fixture-based parity tests.
 //!
 //! Feeds raw `Player.log` lines through `Follower` with a recording submitter and asserts
@@ -15,9 +17,9 @@
 //! `event_time`/`raw_time`) are asserted separately from the handler body, because `utc_time`
 //! defaults to a local-timezone epoch and would otherwise make the test machine-dependent.
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use seventeenlands_rust::api_client::{to_python_json_string, RecordedCall, RecordingSubmitter};
+use seventeenlands_rust::api_client::{RecordedCall, RecordingSubmitter, to_python_json_string};
 use seventeenlands_rust::follower::Follower;
 
 const TOKEN: &str = "00000000-0000-4000-8000-000000000000";
@@ -33,8 +35,11 @@ const ENVELOPE_KEYS: &[&str] = &[
 
 fn run(fixture: &str) -> Vec<RecordedCall> {
     let data = std::fs::read_to_string(fixture).expect("read fixture");
-    let mut f =
-        Follower::with_submitter(TOKEN.into(), "http://localhost".into(), RecordingSubmitter::new());
+    let mut f = Follower::with_submitter(
+        TOKEN.into(),
+        "http://localhost".into(),
+        RecordingSubmitter::new(),
+    );
     f.process_str(&data);
     f.api.calls
 }
@@ -119,7 +124,11 @@ fn gap_branch_parity() {
 
         // Envelope: present, in order, with the expected fixed fields.
         let obj = call.payload.as_object().unwrap();
-        let head: Vec<&str> = obj.keys().take(ENVELOPE_KEYS.len()).map(|s| s.as_str()).collect();
+        let head: Vec<&str> = obj
+            .keys()
+            .take(ENVELOPE_KEYS.len())
+            .map(|s| s.as_str())
+            .collect();
         assert_eq!(head, ENVELOPE_KEYS, "envelope key order at [{i}]");
         assert_eq!(obj["token"], json!(TOKEN));
         assert_eq!(obj["client_version"], json!("0.1.44.p"));
@@ -128,7 +137,10 @@ fn gap_branch_parity() {
         // `time` / `utc_time` are ISO strings (exact values are proven by the oracle diff;
         // here we keep the assertion timezone-independent and portable).
         assert!(obj["time"].as_str().unwrap().contains('T'), "time at [{i}]");
-        assert!(obj["utc_time"].as_str().unwrap().contains('T'), "utc_time at [{i}]");
+        assert!(
+            obj["utc_time"].as_str().unwrap().contains('T'),
+            "utc_time at [{i}]"
+        );
     }
 
     // None of these endpoints are gzipped (only add_game is).

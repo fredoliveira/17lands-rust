@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! Replay a Player.log through the Follower with a recording submitter, printing a summary
 //! of what would be submitted. Dev tooling for validating the parser on real logs without
 //! posting anywhere. Usage: `cargo run --example replay -- <logfile>`
@@ -29,16 +31,26 @@ fn main() {
         eprintln!("  {ep}: {n}");
     }
 
-    if let Some(g) = f.api.calls.iter().find(|c| c.endpoint.ends_with("add_game")) {
-        if let Some(obj) = g.payload.as_object() {
-            eprintln!("add_game top-level keys: {:?}", obj.keys().collect::<Vec<_>>());
-            if let Some(hist) = obj.get("history").and_then(|h| h.as_object()) {
-                eprintln!(
-                    "add_game.history keys: {:?}; events={}",
-                    hist.keys().collect::<Vec<_>>(),
-                    hist.get("events").and_then(|e| e.as_array()).map(|a| a.len()).unwrap_or(0),
-                );
-            }
+    if let Some(g) = f
+        .api
+        .calls
+        .iter()
+        .find(|c| c.endpoint.ends_with("add_game"))
+        && let Some(obj) = g.payload.as_object()
+    {
+        eprintln!(
+            "add_game top-level keys: {:?}",
+            obj.keys().collect::<Vec<_>>()
+        );
+        if let Some(hist) = obj.get("history").and_then(|h| h.as_object()) {
+            eprintln!(
+                "add_game.history keys: {:?}; events={}",
+                hist.keys().collect::<Vec<_>>(),
+                hist.get("events")
+                    .and_then(|e| e.as_array())
+                    .map(|a| a.len())
+                    .unwrap_or(0),
+            );
         }
     }
 }

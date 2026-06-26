@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! Compare Rust Follower output against a captured Python-oracle JSONL.
 //!
 //! Usage: `cargo run --example oracle_diff -- <logfile> <python_capture.jsonl>`
@@ -11,7 +13,7 @@ use std::collections::BTreeMap;
 
 use serde_json::Value;
 
-use seventeenlands_rust::api_client::{to_python_json_string, RecordingSubmitter};
+use seventeenlands_rust::api_client::{RecordingSubmitter, to_python_json_string};
 use seventeenlands_rust::follower::Follower;
 
 fn first_diff_path(a: &Value, b: &Value, path: &str) -> Option<String> {
@@ -58,8 +60,12 @@ fn first_diff_path(a: &Value, b: &Value, path: &str) -> Option<String> {
 
 fn main() {
     let mut args = std::env::args().skip(1);
-    let log_path = args.next().expect("usage: oracle_diff <logfile> <capture.jsonl>");
-    let capture_path = args.next().expect("usage: oracle_diff <logfile> <capture.jsonl>");
+    let log_path = args
+        .next()
+        .expect("usage: oracle_diff <logfile> <capture.jsonl>");
+    let capture_path = args
+        .next()
+        .expect("usage: oracle_diff <logfile> <capture.jsonl>");
 
     // Load the Python capture.
     let capture = std::fs::read_to_string(&capture_path).expect("read capture");
@@ -84,7 +90,11 @@ fn main() {
     f.parse_log(&log_path, false);
     let rust = &f.api.calls;
 
-    println!("rust submissions: {}, python submissions: {}", rust.len(), py.len());
+    println!(
+        "rust submissions: {}, python submissions: {}",
+        rust.len(),
+        py.len()
+    );
 
     let mut mismatches = 0usize;
     let mut by_endpoint_ok: BTreeMap<String, usize> = BTreeMap::new();
@@ -118,7 +128,10 @@ fn main() {
     }
 
     if mismatches == 0 {
-        println!("\n✅ ALL {} submissions byte-identical to the Python oracle", n);
+        println!(
+            "\n✅ ALL {} submissions byte-identical to the Python oracle",
+            n
+        );
     } else {
         println!("\n❌ {mismatches} mismatch(es)");
         std::process::exit(1);

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! MTGA `Player.log` discovery.
 //!
 //! Port `POSSIBLE_ROOTS` × {`Player.log`, `Player-prev.log`} verbatim from
@@ -13,10 +15,10 @@ const PREVIOUS_LOG: &str = "Player-prev.log";
 /// `USERNAME` (the env vars CPython's `getpass.getuser` consults, in order).
 fn current_username() -> String {
     for var in ["LOGNAME", "USER", "LNAME", "USERNAME"] {
-        if let Ok(value) = std::env::var(var) {
-            if !value.is_empty() {
-                return value;
-            }
+        if let Ok(value) = std::env::var(var)
+            && !value.is_empty()
+        {
+            return value;
         }
     }
     // CPython falls back to the pwd database; we have no portable equivalent, so use an

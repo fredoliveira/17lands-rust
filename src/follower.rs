@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! The stateful log follower: tailing, line accumulation, dispatch, and all handlers
 //! (port of the `Follower` class in `mtga_follower.py`).
 //!
@@ -14,9 +16,9 @@ use std::sync::OnceLock;
 use std::time::{Duration, SystemTime};
 
 use regex::Regex;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
-use crate::api_client::{ApiClient, Submitter, CLIENT_VERSION};
+use crate::api_client::{ApiClient, CLIENT_VERSION, Submitter};
 use crate::time_parse::{epoch_zero, extract_time, isoformat, maybe_get_utc_timestamp};
 
 const FILE_UPDATED_FORCE_REFRESH_SECONDS: u64 = 60;
@@ -35,7 +37,9 @@ pub const CHATTER: &str = "17l::chatter";
 
 fn re_log_start_timed() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"^\[(UnityCrossThreadLogger|Client GRE)\](\d[\d:/ .-]+(AM|PM)?)").unwrap())
+    RE.get_or_init(|| {
+        Regex::new(r"^\[(UnityCrossThreadLogger|Client GRE)\](\d[\d:/ .-]+(AM|PM)?)").unwrap()
+    })
 }
 fn re_log_start_untimed() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
@@ -51,7 +55,9 @@ fn re_json_start() -> &'static Regex {
 }
 fn re_account_info() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r".*Updated account\. DisplayName:(.*), AccountID:(.*), Token:.*").unwrap())
+    RE.get_or_init(|| {
+        Regex::new(r".*Updated account\. DisplayName:(.*), AccountID:(.*), Token:.*").unwrap()
+    })
 }
 fn re_login() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
@@ -364,10 +370,16 @@ impl<S: Submitter> Follower<S> {
     fn add_base_api_data(&self, blob: Map<String, Value>) -> Value {
         let mut m = Map::new();
         m.insert("token".into(), Value::String(self.token.clone()));
-        m.insert("client_version".into(), Value::String(CLIENT_VERSION.into()));
+        m.insert(
+            "client_version".into(),
+            Value::String(CLIENT_VERSION.into()),
+        );
         m.insert("player_id".into(), opt_str(&self.cur_user));
         m.insert("time".into(), Value::String(isoformat(&self.cur_log_time)));
-        m.insert("utc_time".into(), Value::String(isoformat(&self.last_utc_time)));
+        m.insert(
+            "utc_time".into(),
+            Value::String(isoformat(&self.last_utc_time)),
+        );
         m.insert("event_time".into(), opt_val(&self.last_event_time));
         m.insert("raw_time".into(), Value::String(self.last_raw_time.clone()));
         for (k, v) in blob {
@@ -536,11 +548,15 @@ impl<S: Submitter> Follower<S> {
         let start = m.start();
 
         // raw_decode: one JSON value from `start`, ignoring trailing text.
-        let mut stream = serde_json::Deserializer::from_str(&full_log[start..]).into_iter::<Value>();
+        let mut stream =
+            serde_json::Deserializer::from_str(&full_log[start..]).into_iter::<Value>();
         let json_obj = match stream.next() {
             Some(Ok(v)) => v,
             _ => {
-                log::debug!("JSON decode error at {} for: {full_log}", isoformat(&self.cur_log_time));
+                log::debug!(
+                    "JSON decode error at {} for: {full_log}",
+                    isoformat(&self.cur_log_time)
+                );
                 return;
             }
         };
@@ -731,8 +747,14 @@ impl<S: Submitter> Follower<S> {
         let mut pack = Map::new();
         pack.insert("payload".into(), obj.clone());
         pack.insert("event_name".into(), opt_val(&obj.get("EventName").cloned()));
-        pack.insert("pack_number".into(), opt_i64(obj.get("PackNumber").and_then(to_i64)));
-        pack.insert("pick_number".into(), opt_i64(obj.get("PickNumber").and_then(to_i64)));
+        pack.insert(
+            "pack_number".into(),
+            opt_i64(obj.get("PackNumber").and_then(to_i64)),
+        );
+        pack.insert(
+            "pick_number".into(),
+            opt_i64(obj.get("PickNumber").and_then(to_i64)),
+        );
         pack.insert(
             "card_ids".into(),
             Value::Array(obj.get("DraftPack").map(int_array).unwrap_or_default()),
@@ -751,8 +773,14 @@ impl<S: Submitter> Follower<S> {
 
         let mut pick = Map::new();
         pick.insert("event_name".into(), opt_val(&obj.get("EventName").cloned()));
-        pick.insert("pack_number".into(), opt_i64(obj.get("PackNumber").and_then(to_i64)));
-        pick.insert("pick_number".into(), opt_i64(obj.get("PickNumber").and_then(to_i64)));
+        pick.insert(
+            "pack_number".into(),
+            opt_i64(obj.get("PackNumber").and_then(to_i64)),
+        );
+        pick.insert(
+            "pick_number".into(),
+            opt_i64(obj.get("PickNumber").and_then(to_i64)),
+        );
         pick.insert("card_id".into(), opt_i64(card_id));
         pick.insert(
             "card_ids".into(),
@@ -771,8 +799,14 @@ impl<S: Submitter> Follower<S> {
         pack.insert("payload".into(), obj.clone());
         pack.insert("draft_id".into(), opt_val(&obj.get("DraftId").cloned()));
         pack.insert("event_name".into(), opt_val(&obj.get("EventId").cloned()));
-        pack.insert("pack_number".into(), opt_i64(obj.get("PackNumber").and_then(to_i64)));
-        pack.insert("pick_number".into(), opt_i64(obj.get("PickNumber").and_then(to_i64)));
+        pack.insert(
+            "pack_number".into(),
+            opt_i64(obj.get("PackNumber").and_then(to_i64)),
+        );
+        pack.insert(
+            "pick_number".into(),
+            opt_i64(obj.get("PickNumber").and_then(to_i64)),
+        );
         pack.insert("card_ids".into(), opt_val(&obj.get("CardsInPack").cloned()));
         pack.insert("method".into(), Value::String("LogBusiness".into()));
         log::info!("Human draft pack (combined)");
@@ -786,11 +820,20 @@ impl<S: Submitter> Follower<S> {
         pick.insert("payload".into(), obj.clone());
         pick.insert("draft_id".into(), opt_val(&obj.get("DraftId").cloned()));
         pick.insert("event_name".into(), opt_val(&obj.get("EventId").cloned()));
-        pick.insert("pack_number".into(), opt_i64(obj.get("PackNumber").and_then(to_i64)));
-        pick.insert("pick_number".into(), opt_i64(obj.get("PickNumber").and_then(to_i64)));
+        pick.insert(
+            "pack_number".into(),
+            opt_i64(obj.get("PackNumber").and_then(to_i64)),
+        );
+        pick.insert(
+            "pick_number".into(),
+            opt_i64(obj.get("PickNumber").and_then(to_i64)),
+        );
         pick.insert("card_id".into(), opt_i64(pick_id));
         pick.insert("auto_pick".into(), opt_val(&obj.get("AutoPick").cloned()));
-        pick.insert("time_remaining".into(), opt_val(&obj.get("TimeRemainingOnPick").cloned()));
+        pick.insert(
+            "time_remaining".into(),
+            opt_val(&obj.get("TimeRemainingOnPick").cloned()),
+        );
         log::info!("Human draft pick (combined)");
         let payload = self.add_base_api_data(pick);
         self.api.submit_human_draft_pick(payload);
@@ -802,15 +845,26 @@ impl<S: Submitter> Follower<S> {
         let card_ids: Vec<Value> = obj
             .get("PackCards")
             .and_then(|v| v.as_str())
-            .map(|s| s.split(',').filter_map(|x| x.trim().parse::<i64>().ok()).map(Value::from).collect())
+            .map(|s| {
+                s.split(',')
+                    .filter_map(|x| x.trim().parse::<i64>().ok())
+                    .map(Value::from)
+                    .collect()
+            })
             .unwrap_or_default();
 
         let mut pack = Map::new();
         pack.insert("payload".into(), obj.clone());
         pack.insert("draft_id".into(), opt_val(&obj.get("draftId").cloned()));
         pack.insert("event_name".into(), opt_val(&self.cur_draft_event));
-        pack.insert("pack_number".into(), opt_i64(obj.get("SelfPack").and_then(to_i64)));
-        pack.insert("pick_number".into(), opt_i64(obj.get("SelfPick").and_then(to_i64)));
+        pack.insert(
+            "pack_number".into(),
+            opt_i64(obj.get("SelfPack").and_then(to_i64)),
+        );
+        pack.insert(
+            "pick_number".into(),
+            opt_i64(obj.get("SelfPick").and_then(to_i64)),
+        );
         pack.insert("card_ids".into(), Value::Array(card_ids));
         pack.insert("method".into(), Value::String("Draft.Notify".into()));
         log::info!("Human draft pack (Draft.Notify)");
@@ -825,8 +879,14 @@ impl<S: Submitter> Follower<S> {
         pick.insert("payload".into(), obj.clone());
         pick.insert("draft_id".into(), opt_val(&obj.get("DraftId").cloned()));
         pick.insert("event_name".into(), opt_val(&self.cur_draft_event));
-        pick.insert("pack_number".into(), opt_i64(obj.get("Pack").and_then(to_i64)));
-        pick.insert("pick_number".into(), opt_i64(obj.get("Pick").and_then(to_i64)));
+        pick.insert(
+            "pack_number".into(),
+            opt_i64(obj.get("Pack").and_then(to_i64)),
+        );
+        pick.insert(
+            "pick_number".into(),
+            opt_i64(obj.get("Pick").and_then(to_i64)),
+        );
         pick.insert("card_ids".into(), opt_val(&obj.get("GrpIds").cloned()));
         log::info!("Human draft pick (EventPlayerDraftMakePick)");
         let payload = self.add_base_api_data(pick);
@@ -864,7 +924,10 @@ impl<S: Submitter> Follower<S> {
         deck.insert("payload".into(), obj.clone());
         deck.insert("event_name".into(), opt_val(&obj.get("EventName").cloned()));
         deck.insert("maindeck_card_ids".into(), Value::Array(expand("MainDeck")));
-        deck.insert("sideboard_card_ids".into(), Value::Array(expand("Sideboard")));
+        deck.insert(
+            "sideboard_card_ids".into(),
+            Value::Array(expand("Sideboard")),
+        );
         deck.insert("companion".into(), companion);
         deck.insert("is_during_match".into(), Value::Bool(false));
         log::info!("Deck submission (Event_SetDeck)");
@@ -891,7 +954,10 @@ impl<S: Submitter> Follower<S> {
     fn handle_event_course(&mut self, obj: &Value) {
         let mut event = Map::new();
         event.insert("payload".into(), obj.clone());
-        event.insert("event_name".into(), opt_val(&obj.get("InternalEventName").cloned()));
+        event.insert(
+            "event_name".into(),
+            opt_val(&obj.get("InternalEventName").cloned()),
+        );
         event.insert("draft_id".into(), opt_val(&obj.get("DraftId").cloned()));
         event.insert("course_id".into(), opt_val(&obj.get("CourseId").cloned()));
         event.insert("card_pool".into(), opt_val(&obj.get("CardPool").cloned()));
@@ -928,9 +994,18 @@ impl<S: Submitter> Follower<S> {
 
     fn handle_inventory(&mut self, obj: &Value) {
         const KEEP: &[&str] = &[
-            "Gems", "Gold", "TotalVaultProgress", "wcTrackPosition", "WildCardCommons",
-            "WildCardUnCommons", "WildCardRares", "WildCardMythics", "DraftTokens",
-            "SealedTokens", "Boosters", "Changes",
+            "Gems",
+            "Gold",
+            "TotalVaultProgress",
+            "wcTrackPosition",
+            "WildCardCommons",
+            "WildCardUnCommons",
+            "WildCardRares",
+            "WildCardMythics",
+            "DraftTokens",
+            "SealedTokens",
+            "Boosters",
+            "Changes",
         ];
         let mut filtered = Map::new();
         if let Some(map) = obj.as_object() {
@@ -1001,7 +1076,10 @@ impl<S: Submitter> Follower<S> {
     }
 
     fn handle_gre_to_client_message(&mut self, message_blob: &Value, event_time: &Option<Value>) {
-        let msg_type = message_blob.get("type").and_then(|v| v.as_str()).unwrap_or("");
+        let msg_type = message_blob
+            .get("type")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
 
         // Add to history before processing — we may submit the game right away.
         let is_game_state = matches!(
@@ -1009,14 +1087,19 @@ impl<S: Submitter> Follower<S> {
             "GREMessageType_QueuedGameStateMessage" | "GREMessageType_GameStateMessage"
         );
         let is_ui_chat = msg_type == "GREMessageType_UIMessage"
-            && message_blob.get("uiMessage").map(|u| u.get("onChat").is_some()).unwrap_or(false);
+            && message_blob
+                .get("uiMessage")
+                .map(|u| u.get("onChat").is_some())
+                .unwrap_or(false);
         if is_game_state || is_ui_chat {
             self.add_to_game_history(message_blob, event_time);
         }
 
         match msg_type {
             "GREMessageType_ConnectResp" => self.handle_gre_connect_response(message_blob),
-            "GREMessageType_EdictalMessage" => self.handle_gre_edictal_message(message_blob, event_time),
+            "GREMessageType_EdictalMessage" => {
+                self.handle_gre_edictal_message(message_blob, event_time)
+            }
             "GREMessageType_GameStateMessage" => self.handle_game_state_message(message_blob),
             _ => {}
         }
@@ -1039,16 +1122,20 @@ impl<S: Submitter> Follower<S> {
 
         if let Some(game_info) = gsm.get("gameInfo") {
             // On a new matchID, switch and clear the event id.
-            if let Some(match_id) = game_info.get("matchID") {
-                if Some(match_id) != self.current_match_id.as_ref() {
-                    self.current_match_id = Some(match_id.clone());
-                    self.current_event_id = None;
-                }
+            if let Some(match_id) = game_info.get("matchID")
+                && Some(match_id) != self.current_match_id.as_ref()
+            {
+                self.current_match_id = Some(match_id.clone());
+                self.current_event_id = None;
             }
         }
 
         let turn_info = gsm.get("turnInfo").cloned().unwrap_or_else(|| json!({}));
-        let players = gsm.get("players").and_then(|p| p.as_array()).cloned().unwrap_or_default();
+        let players = gsm
+            .get("players")
+            .and_then(|p| p.as_array())
+            .cloned()
+            .unwrap_or_default();
 
         // turn_count = turnInfo.turnNumber if truthy, else max(turn_count, sum of players' turnNumber).
         match turn_info.get("turnNumber").and_then(to_i64) {
@@ -1065,7 +1152,10 @@ impl<S: Submitter> Follower<S> {
         // gameObjects → objects_by_owner (Card / SplitCard only).
         if let Some(objs) = gsm.get("gameObjects").and_then(|o| o.as_array()) {
             for game_object in objs {
-                let t = game_object.get("type").and_then(|v| v.as_str()).unwrap_or("");
+                let t = game_object
+                    .get("type")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
                 if t != "GameObjectType_Card" && t != "GameObjectType_SplitCard" {
                     continue;
                 }
@@ -1090,7 +1180,9 @@ impl<S: Submitter> Follower<S> {
                 if zone.get("type").and_then(|v| v.as_str()) != Some("ZoneType_Hand") {
                     continue;
                 }
-                let Some(owner) = zone.get("ownerSeatId").and_then(to_i64) else { continue };
+                let Some(owner) = zone.get("ownerSeatId").and_then(to_i64) else {
+                    continue;
+                };
                 let hand_ids: Vec<i64> = zone
                     .get("objectInstanceIds")
                     .and_then(|v| v.as_array())
@@ -1103,7 +1195,12 @@ impl<S: Submitter> Follower<S> {
                 let hand: Vec<Value> = hand_ids
                     .iter()
                     .filter(|&&iid| iid != 0)
-                    .map(|iid| player_objects.get(&iid.to_string()).cloned().unwrap_or(Value::Null))
+                    .map(|iid| {
+                        player_objects
+                            .get(&iid.to_string())
+                            .cloned()
+                            .unwrap_or(Value::Null)
+                    })
                     .collect();
                 self.cards_in_hand.insert(owner, hand);
 
@@ -1125,10 +1222,10 @@ impl<S: Submitter> Follower<S> {
             {
                 let seat = p.get("systemSeatNumber").and_then(to_i64);
                 let mull = p.get("mulliganCount").and_then(to_i64).unwrap_or(0);
-                if let Some(seat) = seat {
-                    if !deciding.contains(&(seat, mull)) {
-                        deciding.push((seat, mull));
-                    }
+                if let Some(seat) = seat
+                    && !deciding.contains(&(seat, mull))
+                {
+                    deciding.push((seat, mull));
                 }
             }
         }
@@ -1136,11 +1233,18 @@ impl<S: Submitter> Follower<S> {
             if self.starting_team_id.is_none() {
                 self.starting_team_id = turn_info.get("activePlayer").and_then(to_i64);
             }
-            *self.opening_hand_count_by_seat.entry(player_id).or_insert(0) += 1;
+            *self
+                .opening_hand_count_by_seat
+                .entry(player_id)
+                .or_insert(0) += 1;
 
             let hands = self.drawn_hands.entry(player_id).or_default();
             if mulligan_count == hands.len() as i64 {
-                let hand = self.cards_in_hand.get(&player_id).cloned().unwrap_or_default();
+                let hand = self
+                    .cards_in_hand
+                    .get(&player_id)
+                    .cloned()
+                    .unwrap_or_default();
                 hands.push(hand);
             }
         }
@@ -1150,8 +1254,11 @@ impl<S: Submitter> Follower<S> {
             && turn_info.get("step").and_then(|v| v.as_str()) == Some("Step_Upkeep")
             && turn_info.get("turnNumber").and_then(to_i64) == Some(1);
         if self.opening_hand.is_empty() && at_opening {
-            let snapshot: Vec<(i64, Vec<Value>)> =
-                self.cards_in_hand.iter().map(|(k, v)| (*k, v.clone())).collect();
+            let snapshot: Vec<(i64, Vec<Value>)> = self
+                .cards_in_hand
+                .iter()
+                .map(|(k, v)| (*k, v.clone()))
+                .collect();
             for (owner, hand) in snapshot {
                 self.opening_hand.insert(owner, hand);
             }
@@ -1177,8 +1284,10 @@ impl<S: Submitter> Follower<S> {
             // additional_deck_info preserve their order, matching Python's `dict.pop`.
             self.current_game_maindeck =
                 Some(map.shift_remove("deckCards").unwrap_or_else(|| json!([])));
-            self.current_game_sideboard =
-                Some(map.shift_remove("sideboardCards").unwrap_or_else(|| json!([])));
+            self.current_game_sideboard = Some(
+                map.shift_remove("sideboardCards")
+                    .unwrap_or_else(|| json!([])),
+            );
             self.current_game_additional_deck_info = Some(Value::Object(map.clone()));
         } else {
             self.current_game_maindeck = Some(json!([]));
@@ -1206,7 +1315,11 @@ impl<S: Submitter> Follower<S> {
     }
 
     fn handle_client_to_gre_ui_message(&mut self, payload: &Value, event_time: &Option<Value>) {
-        if payload.get("uiMessage").map(|u| u.get("onChat").is_some()).unwrap_or(false) {
+        if payload
+            .get("uiMessage")
+            .map(|u| u.get("onChat").is_some())
+            .unwrap_or(false)
+        {
             self.add_to_game_history(payload, event_time);
         }
     }
@@ -1228,10 +1341,19 @@ impl<S: Submitter> Follower<S> {
             let won = self.seat_id == payload.get("WinningTeamId").and_then(to_i64);
             let mut result = Map::new();
             result.insert("game_end_payload".into(), payload.clone());
-            result.insert("game_number".into(), opt_val(&payload.get("GameNumber").cloned()));
+            result.insert(
+                "game_number".into(),
+                opt_val(&payload.get("GameNumber").cloned()),
+            );
             result.insert("won".into(), Value::Bool(won));
-            result.insert("win_type".into(), opt_val(&payload.get("WinningType").cloned()));
-            result.insert("game_end_reason".into(), opt_val(&payload.get("WinningReason").cloned()));
+            result.insert(
+                "win_type".into(),
+                opt_val(&payload.get("WinningType").cloned()),
+            );
+            result.insert(
+                "game_end_reason".into(),
+                opt_val(&payload.get("WinningReason").cloned()),
+            );
             self.pending_game_result = result;
             log::info!("Added pending game result via LogBusinessEvents");
         }
@@ -1242,10 +1364,11 @@ impl<S: Submitter> Follower<S> {
         if game_info.get("stage").and_then(|v| v.as_str()) != Some("GameStage_GameOver") {
             return;
         }
-        if let Some(results) = game_info.get("results").and_then(|r| r.as_array()) {
-            if !results.is_empty() && self.enqueue_game_data() {
-                self.enqueue_game_results(results, None);
-            }
+        if let Some(results) = game_info.get("results").and_then(|r| r.as_array())
+            && !results.is_empty()
+            && self.enqueue_game_data()
+        {
+            self.enqueue_game_results(results, None);
         }
     }
 
@@ -1255,12 +1378,18 @@ impl<S: Submitter> Follower<S> {
             .and_then(|e| e.get("gameRoomInfo"))
             .cloned()
             .unwrap_or_else(|| json!({}));
-        let game_room_config = game_room_info.get("gameRoomConfig").cloned().unwrap_or_else(|| json!({}));
+        let game_room_config = game_room_info
+            .get("gameRoomConfig")
+            .cloned()
+            .unwrap_or_else(|| json!({}));
 
         let mut updated_match_id = game_room_config.get("matchId").cloned();
         let mut updated_event_id = game_room_config.get("eventId").cloned();
 
-        if let Some(players) = game_room_config.get("reservedPlayers").and_then(|p| p.as_array()) {
+        if let Some(players) = game_room_config
+            .get("reservedPlayers")
+            .and_then(|p| p.as_array())
+        {
             let mut oppo_player_id = String::new();
             for player in players {
                 if let (Some(seat), Some(name)) = (
@@ -1283,18 +1412,18 @@ impl<S: Submitter> Follower<S> {
                 }
             }
 
-            if !oppo_player_id.is_empty() {
-                if let Some(metadata) = game_room_config.get("clientMetadata") {
-                    self.cur_opponent_level = Some(get_rank_string(
-                        metadata.get(format!("{oppo_player_id}_RankClass")),
-                        metadata.get(format!("{oppo_player_id}_RankTier")),
-                        metadata.get(format!("{oppo_player_id}_LeaderboardPercentile")),
-                        metadata.get(format!("{oppo_player_id}_LeaderboardPlacement")),
-                        None,
-                    ));
-                    self.cur_opponent_match_id = game_room_config.get("matchId").cloned();
-                    log::info!("Parsed opponent rank info");
-                }
+            if !oppo_player_id.is_empty()
+                && let Some(metadata) = game_room_config.get("clientMetadata")
+            {
+                self.cur_opponent_level = Some(get_rank_string(
+                    metadata.get(format!("{oppo_player_id}_RankClass")),
+                    metadata.get(format!("{oppo_player_id}_RankTier")),
+                    metadata.get(format!("{oppo_player_id}_LeaderboardPercentile")),
+                    metadata.get(format!("{oppo_player_id}_LeaderboardPlacement")),
+                    None,
+                ));
+                self.cur_opponent_match_id = game_room_config.get("matchId").cloned();
+                log::info!("Parsed opponent rank info");
             }
         }
 
@@ -1313,7 +1442,11 @@ impl<S: Submitter> Follower<S> {
         }
 
         if let Some(final_result) = game_room_info.get("finalMatchResult") {
-            let results = final_result.get("resultList").and_then(|r| r.as_array()).cloned().unwrap_or_default();
+            let results = final_result
+                .get("resultList")
+                .and_then(|r| r.as_array())
+                .cloned()
+                .unwrap_or_default();
             if !results.is_empty() && self.enqueue_game_data() {
                 self.enqueue_game_results(&results, Some(blob));
             }
@@ -1333,10 +1466,16 @@ impl<S: Submitter> Follower<S> {
         if let Some(this) = game_results.last() {
             let won = self.seat_id == this.get("winningTeamId").and_then(to_i64);
             let mut result = Map::new();
-            result.insert("game_number".into(), Value::from(1.max(game_results.len() as i64)));
+            result.insert(
+                "game_number".into(),
+                Value::from(1.max(game_results.len() as i64)),
+            );
             result.insert("won".into(), Value::Bool(won));
             result.insert("win_type".into(), opt_val(&this.get("result").cloned()));
-            result.insert("game_end_reason".into(), opt_val(&this.get("reason").cloned()));
+            result.insert(
+                "game_end_reason".into(),
+                opt_val(&this.get("reason").cloned()),
+            );
             self.pending_game_result = result;
             log::info!("Added pending game result");
         }
@@ -1348,8 +1487,14 @@ impl<S: Submitter> Follower<S> {
             let won_match = self.seat_id == match_result.get("winningTeamId").and_then(to_i64);
             let mut mr = Map::new();
             mr.insert("won_match".into(), Value::Bool(won_match));
-            mr.insert("match_result_type".into(), opt_val(&match_result.get("result").cloned()));
-            mr.insert("match_end_reason".into(), opt_val(&match_result.get("reason").cloned()));
+            mr.insert(
+                "match_result_type".into(),
+                opt_val(&match_result.get("result").cloned()),
+            );
+            mr.insert(
+                "match_end_reason".into(),
+                opt_val(&match_result.get("reason").cloned()),
+            );
             if let Some(obj) = match_obj {
                 mr.insert("match_result_payload".into(), obj.clone());
             }
@@ -1379,8 +1524,10 @@ impl<S: Submitter> Follower<S> {
             seat.and_then(|s| map.get(&s)).cloned().unwrap_or_default()
         };
         let opening_hand = seat_hand(&self.opening_hand);
-        let drawn_hands: Vec<Vec<Value>> =
-            seat.and_then(|s| self.drawn_hands.get(&s)).cloned().unwrap_or_default();
+        let drawn_hands: Vec<Vec<Value>> = seat
+            .and_then(|s| self.drawn_hands.get(&s))
+            .cloned()
+            .unwrap_or_default();
         let mulligans: Vec<Vec<Value>> = if drawn_hands.is_empty() {
             Vec::new()
         } else {
@@ -1390,8 +1537,11 @@ impl<S: Submitter> Follower<S> {
             .and_then(|s| self.drawn_cards_by_instance_id.get(&s))
             .map(|m| m.values().cloned().collect())
             .unwrap_or_default();
-        let mulligan_count =
-            seat.and_then(|s| self.opening_hand_count_by_seat.get(&s)).copied().unwrap_or(0) - 1;
+        let mulligan_count = seat
+            .and_then(|s| self.opening_hand_count_by_seat.get(&s))
+            .copied()
+            .unwrap_or(0)
+            - 1;
         let opponent_mulligan_count = self
             .opening_hand_count_by_seat
             .get(&opponent_id)
@@ -1412,17 +1562,35 @@ impl<S: Submitter> Follower<S> {
         game.insert("drawn_hands".into(), to_array(drawn_hands));
         game.insert("drawn_cards".into(), Value::Array(drawn_cards));
         game.insert("mulligan_count".into(), Value::from(mulligan_count));
-        game.insert("opponent_mulligan_count".into(), Value::from(opponent_mulligan_count));
+        game.insert(
+            "opponent_mulligan_count".into(),
+            Value::from(opponent_mulligan_count),
+        );
         game.insert("turns".into(), Value::from(self.turn_count));
         game.insert("duration".into(), Value::from(-1));
         game.insert("opponent_card_ids".into(), Value::Array(opponent_card_ids));
         game.insert("rank_data".into(), opt_val(&self.cur_rank_data));
         game.insert("opponent_rank".into(), opt_str(&self.cur_opponent_level));
-        game.insert("maindeck_card_ids".into(), opt_val(&self.current_game_maindeck));
-        game.insert("sideboard_card_ids".into(), opt_val(&self.current_game_sideboard));
-        game.insert("additional_deck_info".into(), opt_val(&self.current_game_additional_deck_info));
-        game.insert("service_metadata".into(), opt_val(&self.game_service_metadata));
-        game.insert("client_metadata".into(), opt_val(&self.game_client_metadata));
+        game.insert(
+            "maindeck_card_ids".into(),
+            opt_val(&self.current_game_maindeck),
+        );
+        game.insert(
+            "sideboard_card_ids".into(),
+            opt_val(&self.current_game_sideboard),
+        );
+        game.insert(
+            "additional_deck_info".into(),
+            opt_val(&self.current_game_additional_deck_info),
+        );
+        game.insert(
+            "service_metadata".into(),
+            opt_val(&self.game_service_metadata),
+        );
+        game.insert(
+            "client_metadata".into(),
+            opt_val(&self.game_client_metadata),
+        );
         log::info!("Completed game");
 
         let mut history = Map::new();
@@ -1430,15 +1598,30 @@ impl<S: Submitter> Follower<S> {
         history.insert("opponent_seat_id".into(), Value::from(opponent_id));
         history.insert(
             "screen_name".into(),
-            Value::String(seat.and_then(|s| self.screen_names.get(&s)).cloned().unwrap_or_default()),
+            Value::String(
+                seat.and_then(|s| self.screen_names.get(&s))
+                    .cloned()
+                    .unwrap_or_default(),
+            ),
         );
         history.insert(
             "opponent_screen_name".into(),
-            Value::String(self.screen_names.get(&opponent_id).cloned().unwrap_or_default()),
+            Value::String(
+                self.screen_names
+                    .get(&opponent_id)
+                    .cloned()
+                    .unwrap_or_default(),
+            ),
         );
-        history.insert("events".into(), Value::Array(self.game_history_events.clone()));
+        history.insert(
+            "events".into(),
+            Value::Array(self.game_history_events.clone()),
+        );
         game.insert("history".into(), Value::Object(history));
-        log::info!("Adding game history ({} events)", self.game_history_events.len());
+        log::info!(
+            "Adding game history ({} events)",
+            self.game_history_events.len()
+        );
 
         // copy.deepcopy(game): Value clone is a deep copy, so later mutation can't leak.
         self.pending_game_submission = game;
@@ -1495,7 +1678,10 @@ impl<S: Submitter> Follower<S> {
 
 /// Read one line including its trailing `\n` (mirrors Python `readline` with
 /// `errors="replace"` handled by the lossy decode at the call site). Returns bytes read.
-fn read_until_newline<R: Read>(reader: &mut BufReader<R>, buf: &mut Vec<u8>) -> std::io::Result<usize> {
+fn read_until_newline<R: Read>(
+    reader: &mut BufReader<R>,
+    buf: &mut Vec<u8>,
+) -> std::io::Result<usize> {
     use std::io::BufRead;
     reader.read_until(b'\n', buf)
 }

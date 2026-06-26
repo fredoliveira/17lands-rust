@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! REST client for the 17Lands API (port of `api_client.py`).
 //!
 //! - Every payload is wrapped by the base envelope (`_add_base_api_data`) *in the Follower*

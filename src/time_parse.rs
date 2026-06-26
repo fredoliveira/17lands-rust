@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! Timestamp parsing & serialization.
 //!
 //! - `extract_time`: try the full `TIME_FORMATS` list (mtga_follower.py:146-158).
@@ -184,11 +186,7 @@ fn round_half_even(x: f64) -> i64 {
         floor as i64 + 1
     } else {
         let f = floor as i64;
-        if f % 2 == 0 {
-            f
-        } else {
-            f + 1
-        }
+        if f % 2 == 0 { f } else { f + 1 }
     }
 }
 
@@ -289,9 +287,11 @@ mod tests {
     fn utc_timestamp_absent_or_null_is_none() {
         assert!(maybe_get_utc_timestamp(&json!({"foo": 1})).is_none());
         // Present-but-null short-circuits, ignoring a nested payloadObject timestamp.
-        assert!(maybe_get_utc_timestamp(
-            &json!({"timestamp": null, "payloadObject": {"timestamp": "1782314510331"}})
-        )
-        .is_none());
+        assert!(
+            maybe_get_utc_timestamp(
+                &json!({"timestamp": null, "payloadObject": {"timestamp": "1782314510331"}})
+            )
+            .is_none()
+        );
     }
 }

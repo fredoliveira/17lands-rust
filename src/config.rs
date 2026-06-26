@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! Token resolution & config file.
 //!
 //! Resolution order (first valid UUID-v4 wins):
@@ -123,12 +125,11 @@ fn read_legacy_ini_token() -> Option<String> {
                 .eq_ignore_ascii_case("client");
             continue;
         }
-        if in_client {
-            if let Some((key, value)) = trimmed.split_once('=') {
-                if key.trim().eq_ignore_ascii_case("token") {
-                    return validate_uuid_v4(value.trim());
-                }
-            }
+        if in_client
+            && let Some((key, value)) = trimmed.split_once('=')
+            && key.trim().eq_ignore_ascii_case("token")
+        {
+            return validate_uuid_v4(value.trim());
         }
     }
     None
@@ -150,11 +151,14 @@ fn write_toml_token(token: &str) {
             return;
         }
     };
-    if let Some(parent) = path.parent() {
-        if let Err(e) = std::fs::create_dir_all(parent) {
-            log::error!("Failed to create config directory {}: {e}", parent.display());
-            return;
-        }
+    if let Some(parent) = path.parent()
+        && let Err(e) = std::fs::create_dir_all(parent)
+    {
+        log::error!(
+            "Failed to create config directory {}: {e}",
+            parent.display()
+        );
+        return;
     }
     if let Err(e) = std::fs::write(&path, body) {
         log::error!("Failed to write config {}: {e}", path.display());

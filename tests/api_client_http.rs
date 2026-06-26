@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 //! Integration tests for the live `ApiClient` HTTP path.
 //!
 //! Drives the real client against a loopback `TcpListener` mock so we exercise ureq,
@@ -10,7 +12,7 @@ use std::thread;
 
 use serde_json::json;
 
-use seventeenlands_rust::api_client::{to_python_json_vec, ApiClient, Submitter};
+use seventeenlands_rust::api_client::{ApiClient, Submitter, to_python_json_vec};
 
 /// A captured HTTP request.
 struct CapturedRequest {
@@ -121,9 +123,15 @@ fn posts_plain_json_with_expected_method_path_and_body() {
     assert_eq!(reqs.len(), 1);
     let req = &reqs[0];
 
-    assert_eq!(req.request_line, "POST /api/client/add_mtga_account HTTP/1.1");
+    assert_eq!(
+        req.request_line,
+        "POST /api/client/add_mtga_account HTTP/1.1"
+    );
     assert_eq!(req.header("Content-Type"), Some("application/json"));
-    assert!(req.header("Content-Encoding").is_none(), "plain POST must not be gzipped");
+    assert!(
+        req.header("Content-Encoding").is_none(),
+        "plain POST must not be gzipped"
+    );
     // Body is byte-identical to Python `json.dumps(payload)`.
     assert_eq!(req.body, to_python_json_vec(&payload));
 }
