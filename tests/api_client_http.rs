@@ -1,4 +1,4 @@
-//! Integration tests for the live `ApiClient` HTTP path (SPEC §9, §10).
+//! Integration tests for the live `ApiClient` HTTP path.
 //!
 //! Drives the real client against a loopback `TcpListener` mock so we exercise ureq,
 //! header/body construction, gzip, and the retry/normalization layer end-to-end without

@@ -1,12 +1,12 @@
-//! REST client for the 17Lands API (SPEC §9, port of `api_client.py`).
+//! REST client for the 17Lands API (port of `api_client.py`).
 //!
 //! - Every payload is wrapped by the base envelope (`_add_base_api_data`) *in the Follower*
 //!   (it owns token + identity + timestamps); this module receives an already-enveloped
-//!   `Value` and posts it. Fields are emitted even when null (SPEC §11.2).
+//!   `Value` and posts it. Fields are emitted even when null.
 //! - Only `add_game` is gzipped in the kept endpoint subset.
-//! - `client_version_validation`, `log_errors`, `add_event` are dropped (SPEC §2).
+//! - `client_version_validation`, `log_errors`, `add_event` are dropped.
 //!
-//! ## JSON serialization (SPEC §11)
+//! ## JSON serialization
 //! Python POSTs via `requests`, whose body is `json.dumps(blob)` with the default
 //! `(", ", ": ")` separators. We serialize with a matching formatter so ASCII payloads are
 //! byte-identical to the Python client. (Python also defaults to `ensure_ascii=True`,
@@ -22,13 +22,13 @@ use serde_json::Value;
 
 pub const DEFAULT_HOST: &str = "https://api.17lands.com";
 
-/// Client version string sent in every payload (SPEC §11.1).
+/// Client version string sent in every payload.
 ///
 /// Defaults to impersonating the Python client for guaranteed acceptance; revisit after
 /// live testing (switch to "0.1.44.r" only if 17Lands accepts a distinct identifier).
 pub const CLIENT_VERSION: &str = "0.1.44.p";
 
-/// Endpoint paths (SPEC §9 table). Kept subset only.
+/// Endpoint paths. Kept subset only.
 pub mod endpoints {
     pub const UPDATE_CARD_COLLECTION: &str = "api/client/update_card_collection";
     pub const ADD_DECK: &str = "api/client/add_deck";
@@ -50,7 +50,7 @@ pub mod endpoints {
 /// Submits parsed events to the 17Lands REST API.
 ///
 /// The required method is `submit(endpoint, payload, use_gzip)`; the named helpers below
-/// encode the SPEC §9 endpoint/gzip mapping so the Follower's call sites read like the
+/// encode the endpoint/gzip mapping so the Follower's call sites read like the
 /// Python `api_client` (`submit_draft_pack`, `submit_game_result`, …). For tests, the
 /// trait is implemented by [`RecordingSubmitter`], which records calls instead of sending.
 pub trait Submitter {
@@ -78,7 +78,7 @@ pub trait Submitter {
     fn submit_event_ended(&mut self, blob: Value) {
         self.submit(endpoints::MARK_EVENT_ENDED, blob, false);
     }
-    /// gzipped (SPEC §9).
+    /// gzipped.
     fn submit_game_result(&mut self, blob: Value) {
         self.submit(endpoints::ADD_GAME, blob, true);
     }
@@ -136,7 +136,7 @@ impl Submitter for ApiClient {
         let result = crate::retry::retry_api_call(
             || send_post(&url, &body, use_gzip),
             |resp: &ureq::Response| {
-                // Retry only 5xx (SPEC §10): valid when status is outside 500..600.
+                // Retry only 5xx: valid when status is outside 500..600.
                 !(500..600).contains(&resp.status())
             },
         );
@@ -157,7 +157,7 @@ impl Submitter for ApiClient {
 
 /// Send one POST. Non-2xx HTTP responses are normalized from `Err(Status)` back to
 /// `Ok(Response)` so the retry layer's `response_validator` sees the status; only genuine
-/// transport failures return `Err` (SPEC §10's ureq normalization note).
+/// transport failures return `Err` (see the `retry` module's ureq normalization note).
 fn send_post(
     url: &str,
     body: &[u8],
@@ -186,7 +186,7 @@ fn gzip_compress(data: &[u8]) -> std::io::Result<Vec<u8>> {
 }
 
 /// Serialize a `Value` exactly like Python `json.dumps(blob)` with its default
-/// `(", ", ": ")` separators (SPEC §11), so ASCII payload bytes match the Python client.
+/// `(", ", ": ")` separators, so ASCII payload bytes match the Python client.
 pub fn to_python_json_vec(value: &Value) -> Vec<u8> {
     let mut buf = Vec::with_capacity(128);
     let mut ser = serde_json::Serializer::with_formatter(&mut buf, PythonFormatter);
@@ -241,7 +241,7 @@ impl serde_json::ser::Formatter for PythonFormatter {
 // Test support
 // ---------------------------------------------------------------------------------------
 
-/// A single recorded submission (SPEC §12 mock).
+/// A single recorded submission (test mock).
 #[derive(Debug, Clone, PartialEq)]
 pub struct RecordedCall {
     pub endpoint: String,
@@ -250,7 +250,7 @@ pub struct RecordedCall {
 }
 
 /// A [`Submitter`] that records `(endpoint, payload, use_gzip)` instead of sending, for the
-/// fixture/oracle parity tests (SPEC §12). Lives in `src` (not `#[cfg(test)]`) so both unit
+/// fixture/oracle parity tests. Lives in `src` (not `#[cfg(test)]`) so both unit
 /// tests and the `tests/parity.rs` integration harness share one definition.
 #[derive(Debug, Default)]
 pub struct RecordingSubmitter {
@@ -304,7 +304,7 @@ mod tests {
         assert_eq!(rec.calls[0].endpoint, endpoints::ADD_PACK);
         assert!(!rec.calls[0].use_gzip);
         assert_eq!(rec.calls[1].endpoint, endpoints::ADD_GAME);
-        assert!(rec.calls[1].use_gzip, "add_game must be gzipped (SPEC §9)");
+        assert!(rec.calls[1].use_gzip, "add_game must be gzipped");
         assert_eq!(rec.calls[2].endpoint, endpoints::ADD_MTGA_ACCOUNT);
     }
 

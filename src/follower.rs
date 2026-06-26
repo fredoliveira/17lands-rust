@@ -1,7 +1,7 @@
 //! The stateful log follower: tailing, line accumulation, dispatch, and all handlers
-//! (SPEC §5.4–5.8, §6, §7, §8 — port of the `Follower` class in `mtga_follower.py`).
+//! (port of the `Follower` class in `mtga_follower.py`).
 //!
-//! State modeling (SPEC §7): dynamic blobs are `serde_json::Value`; the instance-id maps
+//! State modeling: dynamic blobs are `serde_json::Value`; the instance-id maps
 //! use `serde_json::Map` (insertion-ordered via the `preserve_order` feature) so derived
 //! lists like `opponent_card_ids` keep Python dict order. `defaultdict` semantics are
 //! emulated at the read sites (`.get(...).unwrap_or_default()` etc.).
@@ -198,7 +198,7 @@ fn get_rank_string(
 // Follower
 // ---------------------------------------------------------------------------------------
 
-/// Mirrors `Follower` state (SPEC §7). Reset wholesale on each outer tail-loop pass.
+/// Mirrors `Follower` state. Reset wholesale on each outer tail-loop pass.
 pub struct Follower<S: Submitter> {
     /// The submitter (live `ApiClient`, or a recorder in tests). Public for test inspection.
     pub api: S,
@@ -266,7 +266,7 @@ impl Follower<ApiClient> {
 }
 
 impl<S: Submitter> Follower<S> {
-    /// Build a Follower with an arbitrary submitter (the test seam, SPEC §12).
+    /// Build a Follower with an arbitrary submitter (the test seam).
     pub fn with_submitter(token: String, host: String, api: S) -> Self {
         let mut f = Self {
             api,
@@ -316,7 +316,7 @@ impl<S: Submitter> Follower<S> {
         f
     }
 
-    /// Port of `_reinitialize` (SPEC §7): reset all state, ending with `__clear_match_data`.
+    /// Port of `_reinitialize`: reset all state, ending with `__clear_match_data`.
     fn reinitialize(&mut self) {
         self.buffer.clear();
         self.cur_log_time = epoch_zero();
@@ -360,7 +360,7 @@ impl<S: Submitter> Follower<S> {
         self.clear_match_data(false);
     }
 
-    /// The base envelope (`_add_base_api_data`, SPEC §9). Fields are emitted even when null.
+    /// The base envelope (`_add_base_api_data`). Fields are emitted even when null.
     fn add_base_api_data(&self, blob: Map<String, Value>) -> Value {
         let mut m = Map::new();
         m.insert("token".into(), Value::String(self.token.clone()));
@@ -377,7 +377,7 @@ impl<S: Submitter> Follower<S> {
     }
 
     // -----------------------------------------------------------------------------------
-    // Tailing (SPEC §5.4)
+    // Tailing
     // -----------------------------------------------------------------------------------
 
     /// Tail (or read once) a log file, dispatching complete entries (port of `parse_log`).
@@ -450,7 +450,7 @@ impl<S: Submitter> Follower<S> {
         }
     }
 
-    /// Process a complete in-memory log (test seam, SPEC §12): reinitialize, feed each
+    /// Process a complete in-memory log (test seam): reinitialize, feed each
     /// line, then flush the final entry. Equivalent to `parse_log(.., follow=false)`
     /// without file I/O or the tail loop.
     pub fn process_str(&mut self, data: &str) {
@@ -462,12 +462,12 @@ impl<S: Submitter> Follower<S> {
     }
 
     // -----------------------------------------------------------------------------------
-    // Line accumulation & entry boundaries (SPEC §5.5)
+    // Line accumulation & entry boundaries
     // -----------------------------------------------------------------------------------
 
-    /// Port of `__append_line` (`recent_lines` dropped, SPEC §14 #4).
+    /// Port of `__append_line` (`recent_lines` dropped).
     fn append_line(&mut self, line: &str) {
-        // __check_detailed_logs: keep the warning, drop the GUI dialog (SPEC §5.5).
+        // __check_detailed_logs: keep the warning, drop the GUI dialog.
         if line.starts_with("DETAILED LOGS: DISABLED") {
             log::warn!("Detailed logs are disabled in MTGA.");
         } else if line.starts_with("DETAILED LOGS: ENABLED") {
@@ -525,7 +525,7 @@ impl<S: Submitter> Follower<S> {
     }
 
     // -----------------------------------------------------------------------------------
-    // Blob parse + dispatch (SPEC §5.6, §6)
+    // Blob parse + dispatch
     // -----------------------------------------------------------------------------------
 
     /// Port of `__handle_blob`: locate JSON, `raw_decode`, extract payload, dispatch.
@@ -558,7 +558,7 @@ impl<S: Submitter> Follower<S> {
         // after updating `last_utc_time` it is reassigned to `blob.get("EventTime")` before
         // being passed to the game-history handlers. So the history `_timestamp` is driven
         // by EventTime (absent in real logs → always null), NOT the utc timestamp. Mirror
-        // that exactly (SPEC §1).
+        // that exactly.
         let event_time = json_obj.get("EventTime").cloned();
         if let Some(et) = &event_time {
             self.last_event_time = Some(et.clone());
@@ -651,7 +651,7 @@ impl<S: Submitter> Follower<S> {
     }
 
     // -----------------------------------------------------------------------------------
-    // Account info (SPEC §5.7)
+    // Account info
     // -----------------------------------------------------------------------------------
 
     fn maybe_handle_account_info(&mut self, line: &str) {
@@ -689,7 +689,7 @@ impl<S: Submitter> Follower<S> {
     }
 
     // -----------------------------------------------------------------------------------
-    // Simple handlers (SPEC §5.x, §13.5)
+    // Simple handlers
     // -----------------------------------------------------------------------------------
 
     fn handle_login(&mut self, obj: &Value) {
@@ -978,7 +978,7 @@ impl<S: Submitter> Follower<S> {
     }
 
     // -----------------------------------------------------------------------------------
-    // Game-state machine (SPEC §8)
+    // Game-state machine
     // -----------------------------------------------------------------------------------
 
     fn add_to_game_history(&mut self, message_blob: &Value, event_time: &Option<Value>) {
@@ -1169,8 +1169,8 @@ impl<S: Submitter> Follower<S> {
         self.split_deck_info(&mut deck_info);
     }
 
-    /// `.pop()`-then-store deck handling shared by connect-resp and submit-deck-resp
-    /// (SPEC §8): remove `deckCards`/`sideboardCards`, keep the rest as additional info.
+    /// `.pop()`-then-store deck handling shared by connect-resp and submit-deck-resp:
+    /// remove `deckCards`/`sideboardCards`, keep the rest as additional info.
     fn split_deck_info(&mut self, deck_info: &mut Value) {
         if let Some(map) = deck_info.as_object_mut() {
             // shift_remove (not remove/swap_remove) so the *remaining* keys kept as

@@ -1,4 +1,4 @@
-//! Exponential-backoff retry (SPEC §10, port of `retry_utils.py`).
+//! Exponential-backoff retry (port of `retry_utils.py`).
 //!
 //! - initial 1s, ×2 each attempt, capped at 10min, max total 24h.
 //! - response valid when `status < 500 || status >= 600` (retry only 5xx).
@@ -27,7 +27,7 @@ pub enum RetryError<E> {
 }
 
 /// Retry `callback` until `response_validator` accepts its result, with exponential
-/// backoff (SPEC §10, port of `retry_utils.retry_until_successful`).
+/// backoff (port of `retry_utils.retry_until_successful`).
 ///
 /// `callback` returns `Ok(T)` for any completed call (including non-2xx HTTP responses,
 /// which the caller normalizes) and `Err(E)` only for transport-level failures.
@@ -78,7 +78,7 @@ where
     }
 }
 
-/// Retry an API call with the standard delays (SPEC §10, port of `retry_api_call`).
+/// Retry an API call with the standard delays (port of `retry_api_call`).
 ///
 /// All errors reaching this layer are transport errors (the caller has already mapped
 /// non-2xx HTTP statuses to `Ok`), so every `Err` is retryable — mirroring Python's

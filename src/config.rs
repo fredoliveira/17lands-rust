@@ -1,4 +1,4 @@
-//! Token resolution & config file (SPEC §5.1).
+//! Token resolution & config file.
 //!
 //! Resolution order (first valid UUID-v4 wins):
 //!   1. `--token` flag
@@ -6,7 +6,7 @@
 //!   3. legacy `~/.mtga_follower.ini` `[client] token` — migrate to TOML if found
 //!   4. interactive stdin prompt; on success, write to the TOML config
 //!
-//! No GUI prompts, no env var (SPEC §14 #3).
+//! No GUI prompts, no env var.
 
 use std::io::{self, Write};
 use std::path::PathBuf;
@@ -24,7 +24,7 @@ const TOKEN_INVALID_MESSAGE: &str = "That token is invalid. Please specify a val
 
 /// New primary config location: `<config_dir>/17l/config.toml`.
 ///
-/// Uses `dirs::config_dir()` (respects `$XDG_CONFIG_HOME`) per SPEC §5.1.
+/// Uses `dirs::config_dir()` (respects `$XDG_CONFIG_HOME`).
 pub fn config_path() -> Option<PathBuf> {
     dirs::config_dir().map(|d| d.join("17l").join("config.toml"))
 }
@@ -36,7 +36,7 @@ pub fn legacy_ini_path() -> Option<PathBuf> {
 
 /// Validate a string is an acceptable UUID v4 token.
 ///
-/// Mirrors Python's `uuid.UUID(s, version=4)` *acceptance set* (SPEC §11.6), which is
+/// Mirrors Python's `uuid.UUID(s, version=4)` *acceptance set*, which is
 /// lenient: it strips `urn:` / `uuid:` prefixes and surrounding braces, removes all
 /// hyphens, then requires exactly 32 hexadecimal digits. The `version=4` argument only
 /// rewrites version/variant bits afterward, so any well-formed UUID string is accepted
@@ -63,7 +63,7 @@ pub fn validate_uuid_v4(maybe: &str) -> Option<String> {
     Some(maybe.to_string())
 }
 
-/// Resolve the token from flag → TOML → legacy ini (migrate) → stdin prompt (SPEC §5.1).
+/// Resolve the token from flag → TOML → legacy ini (migrate) → stdin prompt.
 ///
 /// Returns the validated token, or exits the process on an unrecoverable error (e.g. no
 /// stdin available for the interactive prompt), mirroring the Python client's behavior.
@@ -103,7 +103,7 @@ fn read_toml_token() -> Option<String> {
     validate_uuid_v4(&token)
 }
 
-/// Minimal manual parse of the legacy ini's `[client] token` (SPEC §4: no configparser dep).
+/// Minimal manual parse of the legacy ini's `[client] token` (no configparser dep).
 ///
 /// Only the one `token` key under the `[client]` section is read; the file is otherwise
 /// ignored and not kept in sync afterward.
@@ -164,7 +164,7 @@ fn write_toml_token(token: &str) {
 }
 
 /// Interactive stdin token prompt, re-prompting on invalid UUID (port of
-/// `get_client_token_cli`, SPEC §5.1 step 4).
+/// `get_client_token_cli`).
 fn prompt_token_cli() -> String {
     let mut message = TOKEN_ENTRY_MESSAGE.to_string();
     loop {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mock 17Lands API server for the oracle harness (SPEC §12).
+"""Mock 17Lands API server for the oracle harness.
 
 Captures every POST the reference Python `seventeenlands` client makes (decompressing
 gzip), appending one JSON line `{"endpoint": "...", "body": <parsed json>}` per request to

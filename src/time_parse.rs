@@ -1,10 +1,10 @@
-//! Timestamp parsing & serialization (SPEC §5.8, §11.3).
+//! Timestamp parsing & serialization.
 //!
 //! - `extract_time`: try the full `TIME_FORMATS` list (mtga_follower.py:146-158).
 //! - `maybe_get_utc_timestamp`: ms-since-epoch / .NET-ticks / ISO-8601 branches.
 //! - Output matches Python `datetime.isoformat()`: naive (no tz offset), no microseconds
 //!   when zero, exactly 6 fractional digits when present. Validated against the oracle
-//!   (SPEC §11.3) — e.g. ticks `639179113099292149` → `2026-06-24T15:21:49.929214`.
+//!   — e.g. ticks `639179113099292149` → `2026-06-24T15:21:49.929214`.
 
 #![allow(dead_code)]
 
@@ -27,7 +27,7 @@ const TIME_FORMATS: &[&str] = &[
 ];
 
 /// `datetime.datetime.fromtimestamp(0)` — local-naive epoch (the init value for
-/// `cur_log_time` / `last_utc_time`, SPEC §7).
+/// `cur_log_time` / `last_utc_time`).
 pub fn epoch_zero() -> NaiveDateTime {
     Local
         .timestamp_opt(0, 0)
@@ -52,7 +52,7 @@ fn max_milliseconds_since_epoch() -> i64 {
     1000 * local.timestamp()
 }
 
-/// Convert a raw log time string to a datetime (port of `extract_time`, SPEC §5.8).
+/// Convert a raw log time string to a datetime (port of `extract_time`).
 ///
 /// Strips trailing `:`/` `/`/` (the `STRIPPED_TIMESTAMP_REGEX` run), cuts at the first
 /// `": "`, then tries each `TIME_FORMATS` entry; errors if none match.
@@ -74,7 +74,7 @@ pub fn extract_time(time_str: &str) -> Result<NaiveDateTime, String> {
     Err(format!("Unsupported time format: \"{candidate}\""))
 }
 
-/// Serialize a datetime the way Python `datetime.isoformat()` does (SPEC §11.3): naive (no
+/// Serialize a datetime the way Python `datetime.isoformat()` does: naive (no
 /// offset), microseconds shown as exactly 6 digits only when non-zero.
 pub fn isoformat(dt: &NaiveDateTime) -> String {
     let micros = dt.nanosecond() / 1_000; // truncate ns -> us, matching Python's resolution
@@ -86,8 +86,8 @@ pub fn isoformat(dt: &NaiveDateTime) -> String {
     }
 }
 
-/// Pull a UTC timestamp out of a decoded blob (port of `__maybe_get_utc_timestamp`,
-/// SPEC §5.8). Looks at `timestamp`, then `payloadObject.timestamp`, then
+/// Pull a UTC timestamp out of a decoded blob (port of `__maybe_get_utc_timestamp`).
+/// Looks at `timestamp`, then `payloadObject.timestamp`, then
 /// `params.payloadObject.timestamp`; interprets it as ms-since-epoch, .NET ticks, or an
 /// ISO-8601 string.
 pub fn maybe_get_utc_timestamp(blob: &Value) -> Option<NaiveDateTime> {

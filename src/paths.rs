@@ -1,4 +1,4 @@
-//! MTGA `Player.log` discovery (SPEC §5.2).
+//! MTGA `Player.log` discovery.
 //!
 //! Port `POSSIBLE_ROOTS` × {`Player.log`, `Player-prev.log`} verbatim from
 //! `mtga_follower.py:54-128`: OSX `~/Library/Logs`, Steam Proton compatdata `2141910`,

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Capture the reference Python client's payloads for a given log file (SPEC §12 oracle).
+# Capture the reference Python client's payloads for a given log file (oracle harness).
 #
 # Runs the brew-installed `seventeenlands` against a local mock server in a sandboxed HOME
 # (so it never touches the real config or posts to the live API), writing captured POSTs to

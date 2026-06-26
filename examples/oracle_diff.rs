@@ -1,4 +1,4 @@
-//! Compare Rust Follower output against a captured Python-oracle JSONL (SPEC §12).
+//! Compare Rust Follower output against a captured Python-oracle JSONL.
 //!
 //! Usage: `cargo run --example oracle_diff -- <logfile> <python_capture.jsonl>`
 //!

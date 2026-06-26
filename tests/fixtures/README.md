@@ -1,7 +1,6 @@
 # tests/fixtures
 
-Sanitized MTGA `Player.log` snippets + expected payloads, consumed by `tests/parity.rs`
-(SPEC §12).
+Sanitized MTGA `Player.log` snippets + expected payloads, consumed by `tests/parity.rs`.
 
 ## Raw source logs (gitignored)
 
@@ -20,11 +19,11 @@ payloads) and apply the same sanitization to both sides before diffing.
 
 Confirmed present across the two logs — extract real fixtures for these:
 
-| Path | Handler / branch (SPEC §6) | Notes |
+| Path | Handler / branch | Notes |
 |---|---|---|
 | Human draft packs | `Draft.Notify` (#8) | 42 occurrences |
 | Human draft picks | `EventPlayerDraftMakePick` (#9) | 84 occurrences |
-| **Full games + match results** | `greToClientEvent` (#16), `matchGameRoomStateChangedEvent` (#15) | **~6k GRE msgs, 11 match-state changes → several complete `add_game` submissions.** This exercises the §8 game-state machine — the priority for real-data parity. |
+| **Full games + match results** | `greToClientEvent` (#16), `matchGameRoomStateChangedEvent` (#15) | **~6k GRE msgs, 11 match-state changes → several complete `add_game` submissions.** This exercises the game-state machine — the priority for real-data parity. |
 | Client→GRE (deck submit, etc.) | `ClientToGREMessage` (#17) | ~3.4k |
 | Account / screen name | `authenticateResponse` (#14) | |
 | Mastery progress | `NodeStates`/`RewardTierUpgrade` (#22) | |

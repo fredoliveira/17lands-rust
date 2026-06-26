@@ -1,4 +1,4 @@
-//! Fixture-based parity tests (SPEC §12).
+//! Fixture-based parity tests.
 //!
 //! Feeds raw `Player.log` lines through `Follower` with a recording submitter and asserts
 //! the resulting `(endpoint, payload)` sequence. These committed fixtures cover the dispatch
@@ -53,7 +53,7 @@ fn handler_body(payload: &Value) -> Value {
 fn gap_branch_parity() {
     let calls = run("tests/fixtures/gaps.log");
 
-    // (endpoint, handler body) captured from the reference Python client (SPEC §12).
+    // (endpoint, handler body) captured from the reference Python client.
     let expected: Vec<(&str, Value)> = vec![
         (
             "api/client/add_mtga_account",

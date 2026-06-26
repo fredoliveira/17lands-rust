@@ -61,8 +61,7 @@ tools/oracle/run_oracle.sh /path/to/Player.log out.jsonl     # capture the Pytho
 cargo run --example oracle_diff -- /path/to/Player.log out.jsonl   # diff vs Python (byte-exact)
 ```
 
-`SPEC.md` is the full build specification. `CLAUDE.md` explains the upstream relationship
-and how to keep this client compatible.
+`CLAUDE.md` explains the upstream relationship and how to keep this client compatible.
 
 ## License
 

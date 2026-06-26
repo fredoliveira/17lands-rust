@@ -1,7 +1,6 @@
 //! 17Lands MTGA log client — Rust port (library crate).
 //!
-//! Drop-in replacement for the Python `seventeenlands` client. See `SPEC.md` for the full
-//! specification; section numbers in module docs refer to it. The `main` binary is a thin
+//! Drop-in replacement for the Python `seventeenlands` client. The `main` binary is a thin
 //! wrapper over this crate; the modules are public so the integration tests in `tests/`
 //! (fixture/oracle parity, HTTP) can drive them directly.
 

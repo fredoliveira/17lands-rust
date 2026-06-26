@@ -17,14 +17,12 @@ References available while working:
 - Python source we ported from: `/Users/fred/code/oss/17l/src/python/seventeenlands/`
   (`mtga_follower.py`, `api_client.py`, `retry_utils.py`) — the authoritative behavior.
 - Runnable oracle: the brew-installed `seventeenlands` binary (same 0.1.44 code).
-- `SPEC.md` — the full porting spec: source→module mapping, dispatch table, the wire
-  contract, and every deferred decision.
 
 ## Prime directive: stay wire-compatible
 
 Mirror the Python client **exactly**, including oddities (dispatch order, defaultdict
 semantics, numeric coercions, variable-reuse quirks). When upstream and "clean" disagree,
-match upstream. The make-or-break details live in `SPEC.md §11`; the ones that bit us:
+match upstream. The make-or-break details — the ones that bit us:
 
 - `serde_json` is built with `preserve_order`; payloads are emitted with a Python-`json.dumps`
   separator formatter (`api_client::to_python_json_vec`) so key order + spacing match.
@@ -59,12 +57,12 @@ When upstream bumps its version or changes a handler:
 `main.rs` (CLI + processing loop) · `config.rs` (token) · `paths.rs` (log discovery) ·
 `follower.rs` (tailing, dispatch table, all handlers, game-state machine) ·
 `api_client.rs` (endpoints, envelope, gzip, JSON) · `retry.rs` · `time_parse.rs`.
-Each module's doc comment cites the relevant `SPEC.md §` and `mtga_follower.py` lines.
+Each module's doc comment cites the relevant `mtga_follower.py` lines.
 
 ## Conventions
 
 - **Do not POST to the live `api.17lands.com`** during development without explicit user
   approval; validate against the local mock/oracle instead.
-- Deviations from upstream are intentional and limited (see `SPEC.md §2`): token at the
+- Deviations from upstream are intentional and limited: token at the
   platform config dir (migrated from `~/.mtga_follower.ini`), no GUI prompts, no startup
   version check, no server-side error reporting, stdout/stderr logging only.

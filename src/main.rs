@@ -1,16 +1,7 @@
 //! 17Lands MTGA log client — Rust port.
 //!
-//! Drop-in replacement for the Python `seventeenlands` client. See `SPEC.md` for the
-//! full specification; section numbers in module docs refer to it.
-//!
-//! Build order (SPEC §13):
-//!   1. plumbing (this file, config, paths, logging)   <- DONE (milestone 1)
-//!   2. api_client + retry
-//!   3. tailing + accumulation
-//!   4. blob parse + dispatch
-//!   5. simple handlers
-//!   6. game-state machine
-//!   7. end-to-end
+//! Drop-in replacement for the Python `seventeenlands` client. This is the thin CLI
+//! wrapper: it resolves the token, sets up logging, and runs the processing loop.
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -22,7 +13,7 @@ use seventeenlands_rust::config;
 use seventeenlands_rust::follower::{self, Follower};
 use seventeenlands_rust::paths;
 
-/// CLI flags, mirroring the Python argparse interface (SPEC §2).
+/// CLI flags, mirroring the Python argparse interface.
 #[derive(Parser, Debug)]
 #[command(about = "MTGA log follower — uploads MTG Arena data to 17lands.com")]
 struct Args {
@@ -34,7 +25,7 @@ struct Args {
     #[arg(long, default_value = api_client::DEFAULT_HOST)]
     host: String,
 
-    /// Client token (UUID v4). If unset, resolved from config / stdin (SPEC §5.1).
+    /// Client token (UUID v4). If unset, resolved from config / stdin.
     #[arg(long)]
     token: Option<String>,
 
@@ -52,7 +43,7 @@ fn main() {
     let args = Args::parse();
     init_logging(args.verbose);
 
-    // Resolve the token (flag → TOML → legacy-ini migration → stdin prompt; SPEC §5.1).
+    // Resolve the token (flag → TOML → legacy-ini migration → stdin prompt).
     let token = config::resolve_token(args.token.as_deref());
     log::info!(
         target: follower::CHATTER,
@@ -61,11 +52,11 @@ fn main() {
         &token[token.len().saturating_sub(4)..]
     );
 
-    // SPEC §2: the startup version check is intentionally dropped. The client just runs.
+    // The startup version check is intentionally dropped. The client just runs.
     processing_loop(&args, token);
 }
 
-/// stdout/stderr logging only — no rotating file handler (SPEC §2). The console output is
+/// stdout/stderr logging only — no rotating file handler. The console output is
 /// purely cosmetic; it is **not** part of the wire contract (that lives in `api_client`).
 ///
 /// Default ("clean") format: `HH:MM:SS  message`, with the time dimmed and only WARN/ERROR
@@ -128,7 +119,7 @@ fn init_logging(verbose: bool) {
     builder.init();
 }
 
-/// Port of Python `processing_loop` (SPEC §5.3).
+/// Port of Python `processing_loop`.
 fn processing_loop(args: &Args, token: String) {
     let filepaths: Vec<PathBuf> = match &args.log_file {
         Some(path) => vec![PathBuf::from(path)],
@@ -140,7 +131,7 @@ fn processing_loop(args: &Args, token: String) {
     let mut follower = Follower::new(token, args.host.clone());
 
     // "Normal mode": no explicit log file, default host, and following. Parse the first
-    // existing previous-log once at startup to catch up on missed events (SPEC §5.3).
+    // existing previous-log once at startup to catch up on missed events.
     if args.log_file.is_none() && args.host == api_client::DEFAULT_HOST && follow {
         for filename in paths::possible_previous_filepaths() {
             if filename.exists() {
