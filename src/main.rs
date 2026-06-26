@@ -19,7 +19,7 @@ use clap::Parser;
 
 use seventeenlands_rust::api_client;
 use seventeenlands_rust::config;
-use seventeenlands_rust::follower::Follower;
+use seventeenlands_rust::follower::{self, Follower};
 use seventeenlands_rust::paths;
 
 /// CLI flags, mirroring the Python argparse interface (SPEC §2).
@@ -41,16 +41,21 @@ struct Args {
     /// Parse the file once and exit instead of following it.
     #[arg(long)]
     once: bool,
+
+    /// Use the detailed developer log format (full date, milliseconds, level, module
+    /// target) instead of the clean default. Handy for debugging / parity work.
+    #[arg(short = 'v', long)]
+    verbose: bool,
 }
 
 fn main() {
-    init_logging();
-
     let args = Args::parse();
+    init_logging(args.verbose);
 
     // Resolve the token (flag → TOML → legacy-ini migration → stdin prompt; SPEC §5.1).
     let token = config::resolve_token(args.token.as_deref());
     log::info!(
+        target: follower::CHATTER,
         "Using token {}...{}",
         &token[..token.len().min(4)],
         &token[token.len().saturating_sub(4)..]
@@ -60,14 +65,23 @@ fn main() {
     processing_loop(&args, token);
 }
 
-/// stdout/stderr logging only — no rotating file handler (SPEC §2). Format mirrors the
-/// Python `logging_utils` layout (`<date> <time>.<ms>,<level>,<target>,<message>`) for
-/// familiarity; it is not part of the wire contract.
-fn init_logging() {
+/// stdout/stderr logging only — no rotating file handler (SPEC §2). The console output is
+/// purely cosmetic; it is **not** part of the wire contract (that lives in `api_client`).
+///
+/// Default ("clean") format: `HH:MM:SS  message`, with the time dimmed and only WARN/ERROR
+/// carrying a colored level tag — a calm status feed. `--verbose` switches to the detailed
+/// developer layout that mirrors the Python `logging_utils` line
+/// (`<date> <time>.<ms>,<level>,<target>,<message>`), useful for debugging / parity work.
+///
+/// Color is emitted unconditionally; env_logger's anstream-backed buffer strips the ANSI
+/// codes automatically when the output is not a terminal or `NO_COLOR` is set.
+fn init_logging(verbose: bool) {
     use env_logger::{Builder, Env};
 
-    Builder::from_env(Env::default().default_filter_or("info"))
-        .format(|buf, record| {
+    let mut builder = Builder::from_env(Env::default().default_filter_or("info"));
+
+    if verbose {
+        builder.format(|buf, record| {
             let now = chrono::Local::now();
             writeln!(
                 buf,
@@ -78,8 +92,40 @@ fn init_logging() {
                 record.target(),
                 record.args(),
             )
-        })
-        .init();
+        });
+    } else {
+        use anstyle::{AnsiColor, Style};
+
+        let dim = Style::new().dimmed();
+        let yellow = Style::new()
+            .fg_color(Some(AnsiColor::Yellow.into()))
+            .bold();
+        let red = Style::new().fg_color(Some(AnsiColor::Red.into())).bold();
+
+        builder.format(move |buf, record| {
+            let ts = chrono::Local::now().format("%H:%M:%S");
+            match record.level() {
+                log::Level::Warn => writeln!(
+                    buf,
+                    "{dim}{ts}{dim:#}  {yellow}WARN{yellow:#}  {yellow}{}{yellow:#}",
+                    record.args()
+                ),
+                log::Level::Error => writeln!(
+                    buf,
+                    "{dim}{ts}{dim:#}  {red}ERROR{red:#}  {red}{}{red:#}",
+                    record.args()
+                ),
+                // Background-sync chatter: dim the whole line so it recedes behind events.
+                _ if record.target() == follower::CHATTER => {
+                    writeln!(buf, "{dim}{ts}  {}{dim:#}", record.args())
+                }
+                // INFO/DEBUG/TRACE: dim time, message normal — keep the feed readable.
+                _ => writeln!(buf, "{dim}{ts}{dim:#}  {}", record.args()),
+            }
+        });
+    }
+
+    builder.init();
 }
 
 /// Port of Python `processing_loop` (SPEC §5.3).
@@ -98,7 +144,7 @@ fn processing_loop(args: &Args, token: String) {
     if args.log_file.is_none() && args.host == api_client::DEFAULT_HOST && follow {
         for filename in paths::possible_previous_filepaths() {
             if filename.exists() {
-                log::info!("Parsing the previous log {} once", filename.display());
+                log::info!(target: follower::CHATTER, "Parsing the previous log {} once", filename.display());
                 follower.parse_log(&filename.to_string_lossy(), false);
                 break;
             }
@@ -110,7 +156,7 @@ fn processing_loop(args: &Args, token: String) {
     for filename in &filepaths {
         if Path::new(filename).exists() {
             any_found = true;
-            log::info!("Following along {}", filename.display());
+            log::info!(target: follower::CHATTER, "Following along {}", filename.display());
             follower.parse_log(&filename.to_string_lossy(), follow);
         }
     }

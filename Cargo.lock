@@ -855,6 +855,7 @@ dependencies = [
 name = "seventeenlands-rust"
 version = "0.1.0"
 dependencies = [
+ "anstyle",
  "chrono",
  "clap",
  "dirs",

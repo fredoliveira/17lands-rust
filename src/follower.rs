@@ -22,6 +22,12 @@ use crate::time_parse::{epoch_zero, extract_time, isoformat, maybe_get_utc_times
 const FILE_UPDATED_FORCE_REFRESH_SECONDS: u64 = 60;
 const SLEEP_TIME: Duration = Duration::from_millis(500);
 
+/// Log target marking low-signal, periodic background-sync lines (mastery/inventory/
+/// collection/ongoing-event polling). The console formatter (`main::init_logging`) renders
+/// these fully dimmed so they recede behind real events; the `--verbose` developer format
+/// still shows them in full. Purely cosmetic — no effect on the wire payload.
+pub const CHATTER: &str = "17l::chatter";
+
 // ---------------------------------------------------------------------------------------
 // Regexes (port of mtga_follower.py:132-143). Python `.match` is start-anchored; patterns
 // keep the `^` / leading `.*` from the source so `captures()` reproduces it.
@@ -465,7 +471,7 @@ impl<S: Submitter> Follower<S> {
         if line.starts_with("DETAILED LOGS: DISABLED") {
             log::warn!("Detailed logs are disabled in MTGA.");
         } else if line.starts_with("DETAILED LOGS: ENABLED") {
-            log::info!("Detailed logs enabled in MTGA.");
+            log::info!(target: CHATTER, "Detailed logs enabled in MTGA.");
         }
 
         self.maybe_handle_account_info(line);
@@ -674,7 +680,7 @@ impl<S: Submitter> Follower<S> {
         info.insert("player_id".into(), opt_str(&self.cur_user));
         info.insert("screen_name".into(), opt_str(&self.user_screen_name));
         info.insert("full_screen_name".into(), opt_str(&self.full_screen_name));
-        log::info!("Updating user info");
+        log::info!(target: CHATTER, "Updating user info");
         let payload = self.add_base_api_data(info);
         self.api.submit_user(payload);
     }
@@ -709,7 +715,7 @@ impl<S: Submitter> Follower<S> {
         event.insert("payload".into(), obj.clone());
         let payload = self.add_base_api_data(event);
         self.api.submit_joined_event(payload);
-        log::info!("Joined event successfully");
+        log::info!(target: CHATTER, "Joined event successfully");
     }
 
     fn handle_bot_draft_pack(&mut self, obj: &Value) {
@@ -866,7 +872,7 @@ impl<S: Submitter> Follower<S> {
     fn handle_ongoing_events(&mut self, obj: &Value) {
         let mut event = Map::new();
         event.insert("courses".into(), opt_val(&obj.get("Courses").cloned()));
-        log::info!("Updated ongoing events");
+        log::info!(target: CHATTER, "Updated ongoing events");
         let payload = self.add_base_api_data(event);
         self.api.submit_ongoing_events(payload);
     }
@@ -896,7 +902,7 @@ impl<S: Submitter> Follower<S> {
         if let Some(pid) = obj.get("playerId").and_then(|v| v.as_str()) {
             self.cur_user = Some(pid.to_string());
         }
-        log::info!("Parsed rank info");
+        log::info!(target: CHATTER, "Parsed rank info");
         let mut data = Map::new();
         data.insert("rank_data".into(), opt_val(&self.cur_rank_data));
         data.insert("limited_rank".into(), Value::Null);
@@ -912,7 +918,7 @@ impl<S: Submitter> Follower<S> {
         }
         let mut collection = Map::new();
         collection.insert("card_counts".into(), obj.clone());
-        log::info!("Collection submission");
+        log::info!(target: CHATTER, "Collection submission");
         let payload = self.add_base_api_data(collection);
         self.api.submit_collection(payload);
     }
@@ -933,7 +939,7 @@ impl<S: Submitter> Follower<S> {
         }
         let mut blob = Map::new();
         blob.insert("inventory".into(), Value::Object(filtered));
-        log::info!("Submitting inventory");
+        log::info!(target: CHATTER, "Submitting inventory");
         let payload = self.add_base_api_data(blob);
         self.api.submit_inventory(payload);
     }
@@ -941,7 +947,7 @@ impl<S: Submitter> Follower<S> {
     fn handle_player_progress(&mut self, obj: &Value) {
         let mut blob = Map::new();
         blob.insert("progress".into(), obj.clone());
-        log::info!("Submitting mastery progress");
+        log::info!(target: CHATTER, "Submitting mastery progress");
         let payload = self.add_base_api_data(blob);
         self.api.submit_player_progress(payload);
     }
