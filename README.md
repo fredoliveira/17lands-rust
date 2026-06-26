@@ -10,6 +10,28 @@ This is a drop-in replacement for the official Python client
 for byte-for-byte compatibility with the original client. The motivation to build this stems
 from wanting a single binary distribution that requires no old python dependencies.
 
+## Install
+
+```sh
+# From source (builds and installs the binary onto your PATH):
+cargo install --git https://github.com/fredoliveira/17lands-rust
+
+# Or via Homebrew (macOS/Linux), once the tap is published:
+brew install fredoliveira/tap/seventeenlands-rust
+```
+
+Both paths download via tooling that doesn't quarantine the binary, so it runs without
+any macOS Gatekeeper prompt. If you instead grab a prebuilt archive from the
+[releases page](https://github.com/fredoliveira/17lands-rust/releases) in a browser,
+clear the quarantine flag once after extracting:
+
+```sh
+xattr -dr com.apple.quarantine ./seventeenlands-rust
+```
+
+(The macOS binaries are ad-hoc signed but not Apple-notarized; the `xattr` step is only
+needed for browser downloads. See `packaging/homebrew/` to publish the tap.)
+
 ## Run
 
 ```sh
