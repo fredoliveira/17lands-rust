@@ -40,6 +40,24 @@ cargo build --release
 ./target/release/seventeenlands
 ```
 
+## Card names in draft logs (optional)
+
+By default the draft-pick log lines show the bare Arena card ID that was picked. To see card
+**names** instead, build a one-off Arena-ID → name map from
+[MTGJSON](https://mtgjson.com/data-models/identifiers/):
+
+```sh
+just card-db                                    # downloads MTGJSON, writes to the config dir
+# or directly (the underlying cargo example):
+cargo run --example build_card_db -- [--source AllIdentifiers.json] [--out PATH]
+```
+
+This writes `arena_names.json` next to the token config (`<config>/17l/`), which the client
+loads automatically on the next run. It is **console-only** — purely cosmetic logging that
+never affects the uploaded payloads, so it stays clear of the wire-compatibility contract.
+Override the lookup path with `SEVENTEENLANDS_CARD_DB`; if the file is absent, logs simply
+fall back to raw IDs.
+
 ## Credits & license
 
 This is a Rust port of the official 17Lands client,

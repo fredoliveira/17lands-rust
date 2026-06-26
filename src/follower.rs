@@ -19,6 +19,7 @@ use regex::Regex;
 use serde_json::{Map, Value, json};
 
 use crate::api_client::{ApiClient, CLIENT_VERSION, Submitter};
+use crate::card_db::CardDb;
 use crate::time_parse::{epoch_zero, extract_time, isoformat, maybe_get_utc_timestamp};
 
 const FILE_UPDATED_FORCE_REFRESH_SECONDS: u64 = 60;
@@ -261,6 +262,10 @@ pub struct Follower<S: Submitter> {
     buffer: Vec<String>,
     last_blob: String,
     current_debug_blob: String,
+
+    // Console-only Arena-ID → name lookup for draft-pick log lines (never reset; reference
+    // data, not match state). See `card_db.rs` — outside the wire-compatibility contract.
+    card_db: CardDb,
 }
 
 impl Follower<ApiClient> {
@@ -317,6 +322,7 @@ impl<S: Submitter> Follower<S> {
             buffer: Vec::new(),
             last_blob: String::new(),
             current_debug_blob: String::new(),
+            card_db: CardDb::load(),
         };
         f.reinitialize();
         f
@@ -834,7 +840,11 @@ impl<S: Submitter> Follower<S> {
             "time_remaining".into(),
             opt_val(&obj.get("TimeRemainingOnPick").cloned()),
         );
-        log::info!("Human draft pick (combined)");
+        let picked: Vec<i64> = pick_id.into_iter().collect();
+        match self.card_db.label(&picked) {
+            Some(label) => log::info!("Human draft pick (combined): {label}"),
+            None => log::info!("Human draft pick (combined)"),
+        }
         let payload = self.add_base_api_data(pick);
         self.api.submit_human_draft_pick(payload);
     }
@@ -888,7 +898,15 @@ impl<S: Submitter> Follower<S> {
             opt_i64(obj.get("Pick").and_then(to_i64)),
         );
         pick.insert("card_ids".into(), opt_val(&obj.get("GrpIds").cloned()));
-        log::info!("Human draft pick (EventPlayerDraftMakePick)");
+        let picked: Vec<i64> = obj
+            .get("GrpIds")
+            .and_then(|v| v.as_array())
+            .map(|a| a.iter().filter_map(to_i64).collect())
+            .unwrap_or_default();
+        match self.card_db.label(&picked) {
+            Some(label) => log::info!("Human draft pick (EventPlayerDraftMakePick): {label}"),
+            None => log::info!("Human draft pick (EventPlayerDraftMakePick)"),
+        }
         let payload = self.add_base_api_data(pick);
         self.api.submit_human_draft_pick(payload);
     }

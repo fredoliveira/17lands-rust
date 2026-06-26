@@ -23,6 +23,7 @@
 //! (fixture/oracle parity, HTTP) can drive them directly.
 
 pub mod api_client;
+pub mod card_db;
 pub mod config;
 pub mod follower;
 pub mod paths;

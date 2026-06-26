@@ -73,6 +73,14 @@ parity LOG OUT="out.jsonl": (oracle LOG OUT) (oracle-diff LOG OUT)
 replay LOG:
     cargo run --example replay -- {{LOG}}
 
+# --- Card names (console-only; see src/card_db.rs) -------------------------
+
+# Build the Arena-ID -> name map from MTGJSON so draft-pick logs show card names.
+# Writes to <config>/17l/arena_names.json by default (picked up automatically).
+# Pass a local AllIdentifiers.json to skip the download: `just card-db file.json`.
+card-db SOURCE="":
+    cargo run --example build_card_db -- {{ if SOURCE != "" { "--source " + SOURCE } else { "" } }}
+
 # --- Housekeeping ----------------------------------------------------------
 
 # Remove build artifacts.
