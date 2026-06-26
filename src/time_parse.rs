@@ -258,29 +258,45 @@ mod tests {
         }
     }
 
+    /// Expected ms-path output for a given epoch-ms value, computed the same way
+    /// `from_milliseconds` does. The ms branch mirrors Python `fromtimestamp(ms*0.001)`,
+    /// which is **local-timezone dependent**, so the expectation must follow the local
+    /// zone too — hardcoding an absolute string would break on any runner not in the
+    /// author's zone (e.g. UTC CI). Validated against the oracle on the same machine.
+    fn local_ms_isoformat(ms: i64) -> String {
+        isoformat(
+            &Local
+                .timestamp_millis_opt(ms)
+                .single()
+                .unwrap()
+                .naive_local(),
+        )
+    }
+
     #[test]
     fn utc_timestamp_milliseconds_matches_python() {
         let dt = maybe_get_utc_timestamp(&json!({"timestamp": "1782314510331"})).unwrap();
-        assert_eq!(isoformat(&dt), "2026-06-24T16:21:50.331000");
+        assert_eq!(isoformat(&dt), local_ms_isoformat(1782314510331));
     }
 
     #[test]
     fn utc_timestamp_numeric_value() {
         // Integer JSON number, same ms value.
         let dt = maybe_get_utc_timestamp(&json!({"timestamp": 1782314510331i64})).unwrap();
-        assert_eq!(isoformat(&dt), "2026-06-24T16:21:50.331000");
+        assert_eq!(isoformat(&dt), local_ms_isoformat(1782314510331));
     }
 
     #[test]
     fn utc_timestamp_from_payload_object_and_params() {
+        let expected = local_ms_isoformat(1782314510331);
         let dt = maybe_get_utc_timestamp(&json!({"payloadObject": {"timestamp": "1782314510331"}}))
             .unwrap();
-        assert_eq!(isoformat(&dt), "2026-06-24T16:21:50.331000");
+        assert_eq!(isoformat(&dt), expected);
         let dt2 = maybe_get_utc_timestamp(
             &json!({"params": {"payloadObject": {"timestamp": "1782314510331"}}}),
         )
         .unwrap();
-        assert_eq!(isoformat(&dt2), "2026-06-24T16:21:50.331000");
+        assert_eq!(isoformat(&dt2), expected);
     }
 
     #[test]
