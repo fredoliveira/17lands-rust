@@ -1,11 +1,13 @@
-# seventeenlands-rust
+# 17Lands, but in rust!
 
 A Rust port of the [17Lands](https://www.17lands.com) MTG Arena log client. It tails
 Arena's `Player.log`, parses gameplay events, and uploads them to the 17Lands REST API.
 
-It is a **drop-in replacement** for the official Python client
-([`mtga-log-client`](https://github.com/rconroy293/mtga-log-client)): same parsing, same
-endpoints, same payloads — verified byte-for-byte against it (see `CLAUDE.md`).
+This is a drop-in replacement for the official Python client
+([`mtga-log-client`](https://github.com/rconroy293/mtga-log-client)), and as such it aims
+for byte-for-byte compatibility with the original client. The motivation to build this stems
+from wanting a single binary distribution that requires no old python dependencies. It 
+will also allow building a richer 17lands client using Tauri in the future, for example.
 
 ## Run
 
