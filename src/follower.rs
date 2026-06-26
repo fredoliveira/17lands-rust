@@ -515,7 +515,10 @@ impl<S: Submitter> Follower<S> {
             self.handle_blob(&full_log);
             self.last_blob = full_log;
         } else {
-            log::info!("Skipping repeated complete log entry: {full_log}");
+            // Dedup hits are pure noise on the console (e.g. repeated "AK Message: Audio
+            // thread resumed" lines); keep them at debug so `RUST_LOG=debug` can still show
+            // them. Console-only — no effect on the wire (upstream logs this at info).
+            log::debug!("Skipping repeated complete log entry: {full_log}");
         }
 
         self.buffer.clear();
