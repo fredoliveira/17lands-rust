@@ -32,8 +32,9 @@ brew install fredoliveira/tap/seventeenlands-rust
 
 ## On every release
 
-Bump `version` and the three `sha256` values in the formula (the URLs are derived
-from `version`). Get the checksums from the release assets:
+Bump the tag (`v0.1.0` → `vX.Y.Z`) in the three `url` lines and update their
+`sha256` values. There's no `version` field to touch — Homebrew scans the version
+from the release tag in the URL. Get the checksums from the release assets:
 
 ```sh
 gh release download vX.Y.Z -R fredoliveira/17lands-rust -p '*.tar.gz' -D /tmp/rel
