@@ -41,13 +41,13 @@ jobs:
       - name: Package (unix)
         if: runner.os != 'Windows'
         run: |
-          bin=target/${{ matrix.target }}/release/seventeenlands-rust
-          tar -czf seventeenlands-rust-${{ matrix.target }}.tar.gz -C "$(dirname "$bin")" seventeenlands-rust
+          bin=target/${{ matrix.target }}/release/seventeenlands
+          tar -czf seventeenlands-rust-${{ matrix.target }}.tar.gz -C "$(dirname "$bin")" seventeenlands
 
       - name: Package (windows)
         if: runner.os == 'Windows'
         run: |
-          $bin = "target/${{ matrix.target }}/release/seventeenlands-rust.exe"
+          $bin = "target/${{ matrix.target }}/release/seventeenlands.exe"
           Compress-Archive -Path $bin -DestinationPath "seventeenlands-rust-${{ matrix.target }}.zip"
 
       - name: Upload artifacts

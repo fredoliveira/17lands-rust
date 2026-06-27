@@ -13,78 +13,32 @@ from wanting a single binary distribution that requires no old python dependenci
 ## Install
 
 ```sh
+# Via Homebrew (macOS/Linux):
+brew install fredoliveira/tap/seventeenlands-rust
+
 # From source (builds and installs the binary onto your PATH):
 cargo install --git https://github.com/fredoliveira/17lands-rust
-
-# Or via Homebrew (macOS/Linux), once the tap is published:
-brew install fredoliveira/tap/seventeenlands-rust
 ```
 
-Both paths download via tooling that doesn't quarantine the binary, so it runs without
-any macOS Gatekeeper prompt. If you instead grab a prebuilt archive from the
-[releases page](https://github.com/fredoliveira/17lands-rust/releases) in a browser,
-clear the quarantine flag once after extracting:
+## Running
 
 ```sh
-xattr -dr com.apple.quarantine ./seventeenlands-rust
+# Assuming a normal installation, run this in your terminal
+seventeenlands
 ```
-
-(The macOS binaries are ad-hoc signed but not Apple-notarized; the `xattr` step is only
-needed for browser downloads. See `packaging/homebrew/` to publish the tap.)
-
-## Run
-
-```sh
-cargo build --release
-
-# Tail the auto-discovered Player.log and upload to 17lands.com:
-./target/release/seventeenlands-rust
-
-# Single catch-up pass over a specific log, then exit:
-./target/release/seventeenlands-rust --log-file /path/to/Player.log --once
-```
-
-Flags: `--log-file <path>`, `--host <url>`, `--token <uuid>`, `--once`.
-
-**Token:** resolved as `--token` → `~/.config/17l/config.toml`¹ → legacy
-`~/.mtga_follower.ini` (migrated on first run) → interactive prompt. Get yours at
-[17lands.com/account](https://www.17lands.com/account).
-
-> ¹ Platform config dir (`dirs::config_dir()`): `~/.config/17l/` on Linux,
-> `~/Library/Application Support/17l/` on macOS, `%APPDATA%\17l\` on Windows.
 
 **Detailed Logs** must be enabled in MTGA (gear → Account → "Detailed Logs") for game data
 to be captured.
 
-## Distribute
-
-The release build is a single self-contained binary (TLS via rustls; no OpenSSL or other
-system dependency beyond libc):
+### Running from the source code directly
 
 ```sh
-cargo build --release          # → target/release/seventeenlands-rust
-# install onto this machine:
-cargo install --path .
-# or just copy the binary to any same-OS/arch machine and run it.
+# Build a release version
+cargo build --release
+
+# Start the built artifact
+./target/release/seventeenlands
 ```
-
-For other targets, cross-compile, e.g.:
-
-```sh
-rustup target add x86_64-pc-windows-gnu
-cargo build --release --target x86_64-pc-windows-gnu
-```
-
-## Test
-
-```sh
-cargo test                                                   # unit + integration + parity
-cargo run --example replay -- /path/to/Player.log            # show submissions, send nothing
-tools/oracle/run_oracle.sh /path/to/Player.log out.jsonl     # capture the Python client
-cargo run --example oracle_diff -- /path/to/Player.log out.jsonl   # diff vs Python (byte-exact)
-```
-
-`CLAUDE.md` explains the upstream relationship and how to keep this client compatible.
 
 ## Credits & license
 

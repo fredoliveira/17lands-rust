@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-06-27
+
+### Changed
+- The installed executable is now named `seventeenlands` (was `seventeenlands-rust`),
+  matching the official Python client it replaces. The crate, repository, and release
+  artifacts keep the `seventeenlands-rust` name.
+
 ## [0.1.0] - 2026-06-26
 
 Initial release. A drop-in, wire-compatible Rust port of the official 17Lands MTG Arena log
@@ -21,5 +28,6 @@ upstream `CLIENT_VERSION = "0.1.44.p"`.
 - Oracle parity tooling (`tools/oracle/`, `examples/oracle_diff.rs`) and an offline
   `replay` example.
 
-[Unreleased]: https://github.com/fredoliveira/17lands-rust/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/fredoliveira/17lands-rust/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/fredoliveira/17lands-rust/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/fredoliveira/17lands-rust/releases/tag/v0.1.0

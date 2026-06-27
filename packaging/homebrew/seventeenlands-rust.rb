@@ -30,10 +30,10 @@ class SeventeenlandsRust < Formula
   end
 
   def install
-    bin.install "seventeenlands-rust"
+    bin.install "seventeenlands"
   end
 
   test do
-    assert_match "17lands.com", shell_output("#{bin}/seventeenlands-rust --help")
+    assert_match "17lands.com", shell_output("#{bin}/seventeenlands --help")
   end
 end

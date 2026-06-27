@@ -1,6 +1,6 @@
 [package]
 name = "seventeenlands-rust"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Rust port of the 17Lands MTGA log client (uploads MTG Arena data to 17lands.com)"
 license = "GPL-3.0-only"
@@ -10,6 +10,10 @@ keywords = ["mtg", "mtga", "17lands", "magic", "draft"]
 categories = ["command-line-utilities", "games"]
 authors = ["Fred Oliveira <fred@helloform.com>"]
 rust-version = "1.85"
+
+[[bin]]
+name = "seventeenlands"
+path = "src/main.rs"
 
 [dependencies]
 # HTTP — blocking, lightweight; matches the synchronous tail-and-POST loop.
