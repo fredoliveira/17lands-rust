@@ -11,6 +11,13 @@ categories = ["command-line-utilities", "games"]
 authors = ["Fred Oliveira <fred@helloform.com>"]
 rust-version = "1.85"
 
+# The repo is a workspace: the wire-compatible core stays the root package; the desktop
+# (Tauri menu-bar app) lives in its own member crate and depends on this one as a library.
+# An explicit resolver is required because the members span editions (core 2024, desktop 2021).
+[workspace]
+members = ["desktop"]
+resolver = "2"
+
 [[bin]]
 name = "seventeenlands"
 path = "src/main.rs"
