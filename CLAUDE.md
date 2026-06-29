@@ -59,6 +59,12 @@ When upstream bumps its version or changes a handler:
 `api_client.rs` (endpoints, envelope, gzip, JSON) · `retry.rs` · `time_parse.rs`.
 Each module's doc comment cites the relevant `mtga_follower.py` lines.
 
+The repo is a Cargo workspace: the root package above is the wire-compatible core; `desktop/`
+is a separate **Tauri v2 menu-bar app** that reuses the core as a library (its `follower`,
+`config`, `paths`, `api_client`) and never touches payload construction. The GUI observes
+uploads structurally via an `ObservingSubmitter` (a `Submitter` decorator passed to
+`Follower::with_submitter`) and mirrors the `log` feed into the webview. See `desktop/README.md`.
+
 ## Conventions
 
 - **Do not POST to the live `api.17lands.com`** during development without explicit user
@@ -66,3 +72,7 @@ Each module's doc comment cites the relevant `mtga_follower.py` lines.
 - Deviations from upstream are intentional and limited: token at the
   platform config dir (migrated from `~/.mtga_follower.ini`), no GUI prompts, no startup
   version check, no server-side error reporting, stdout/stderr logging only.
+- Two **additive, non-wire** seams exist for the desktop app and do not change any payload,
+  dispatch order, or send timing (parity tests prove this): `config::{read_toml_token,
+  write_toml_token}` are `pub`, and `Follower::parse_log_cancellable` adds cooperative
+  cancellation (`parse_log` delegates to it with an always-false flag).

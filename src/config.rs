@@ -97,7 +97,10 @@ pub fn resolve_token(flag: Option<&str>) -> String {
 }
 
 /// Read + validate the `token` key from `<config_dir>/17l/config.toml`.
-fn read_toml_token() -> Option<String> {
+///
+/// Public so the desktop GUI can check for / load the saved token without going through
+/// [`resolve_token`], which falls back to a blocking stdin prompt unsuitable for a GUI.
+pub fn read_toml_token() -> Option<String> {
     let path = config_path()?;
     let contents = std::fs::read_to_string(&path).ok()?;
     let config: Config = toml::from_str(&contents).ok()?;
@@ -136,7 +139,10 @@ fn read_legacy_ini_token() -> Option<String> {
 }
 
 /// Write the token to `<config_dir>/17l/config.toml`, creating the directory.
-fn write_toml_token(token: &str) {
+///
+/// Public so the desktop GUI can persist a token captured in its settings dialog, writing
+/// to the same file the CLI reads.
+pub fn write_toml_token(token: &str) {
     let Some(path) = config_path() else {
         log::error!("Could not determine config directory; token not persisted");
         return;

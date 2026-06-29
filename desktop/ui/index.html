@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>17Lands</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="dot" id="status-dot"></span>
+        <strong>17Lands</strong>
+      </div>
+      <nav>
+        <button class="tab active" data-view="log">Log</button>
+        <button class="tab" data-view="settings">Settings</button>
+      </nav>
+    </header>
+
+    <section id="status-bar">
+      <span id="status-text">Starting…</span>
+      <span id="status-uploads" class="muted"></span>
+    </section>
+
+    <!-- Log view -->
+    <main id="view-log" class="view">
+      <div id="log" class="log"></div>
+      <div class="logbar">
+        <label><input type="checkbox" id="show-chatter" /> Show background chatter</label>
+        <button id="clear-log">Clear</button>
+      </div>
+    </main>
+
+    <!-- Settings view -->
+    <main id="view-settings" class="view hidden">
+      <div class="field">
+        <label for="token">17Lands token</label>
+        <p class="muted">
+          Find it on your 17Lands account page. Stored locally in your config dir.
+        </p>
+        <div class="row">
+          <input type="text" id="token" placeholder="00000000-0000-4000-8000-000000000000" />
+          <button id="save-token">Save</button>
+        </div>
+        <p id="token-msg" class="msg"></p>
+      </div>
+
+      <div class="field">
+        <label for="log-path">Log file</label>
+        <p class="muted">Auto-detected. Override only if your Player.log lives elsewhere.</p>
+        <div class="row">
+          <input type="text" id="log-path" placeholder="(auto-detected)" />
+          <button id="save-path">Set</button>
+        </div>
+        <p id="path-msg" class="msg"></p>
+      </div>
+
+      <div class="field">
+        <span class="muted">Uploading to: <code id="host"></code></span>
+      </div>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
