@@ -11,10 +11,10 @@
 #![allow(dead_code)]
 
 use std::collections::HashMap;
-use std::io::{BufReader, Read};
+use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::sync::Arc;
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, SystemTime};
 
 use regex::Regex;
@@ -413,6 +413,38 @@ impl<S: Submitter> Follower<S> {
         follow: bool,
         cancel: &Arc<AtomicBool>,
     ) {
+        // Delegate with `start_offset = 0` (read from the beginning) and no position sink:
+        // this reproduces the original loop byte-for-byte for every existing caller (CLI,
+        // parity/oracle tests). See [`parse_log_cancellable_from`].
+        self.parse_log_cancellable_from(filename, follow, cancel, 0, None);
+    }
+
+    /// Like [`parse_log_cancellable`](Self::parse_log_cancellable) but supports *resuming* a
+    /// tail from a remembered byte offset, and continuously reports the current read position.
+    /// This is additive control flow only — it neither builds nor sends a different payload,
+    /// so the wire contract (and parity tests) are unchanged; with `start_offset = 0` and
+    /// `position = None` it is identical to the original loop.
+    ///
+    /// - `start_offset`: on the *very first* file open this seeks to that byte instead of byte
+    ///   0, skipping the from-zero reprocessing for that first pass. Used by the desktop app to
+    ///   avoid re-emitting old lines and re-POSTing already-processed events on stop→start.
+    ///   It applies only to the initial open: the in-loop "start from beginning" heuristics
+    ///   (file shrank, or modified far more recently than the last read) still restart the tail
+    ///   from byte 0 as before, so live-tailing is unaffected.
+    /// - `position`: when `Some`, the current byte read-position is published into this atomic
+    ///   as lines are consumed, so a caller can remember where the tail left off at stop time.
+    pub fn parse_log_cancellable_from(
+        &mut self,
+        filename: &str,
+        follow: bool,
+        cancel: &Arc<AtomicBool>,
+        start_offset: u64,
+        position: Option<&Arc<AtomicU64>>,
+    ) {
+        // The resume offset applies to the initial open only; every subsequent "start from
+        // beginning" pass reads from byte 0 like the original loop.
+        let mut pending_offset = start_offset;
+
         loop {
             if cancel.load(Ordering::Relaxed) {
                 return;
@@ -420,10 +452,29 @@ impl<S: Submitter> Follower<S> {
             self.reinitialize();
             let mut last_read_time = SystemTime::now();
             let mut last_file_size: u64 = 0;
+            let resume_offset = std::mem::replace(&mut pending_offset, 0);
 
             match std::fs::File::open(filename) {
                 Ok(file) => {
                     let mut reader = BufReader::new(file);
+                    // Byte position of the read cursor, mirrored into `position` as we go.
+                    let mut pos: u64 = 0;
+                    if resume_offset > 0 {
+                        match reader.seek(SeekFrom::Start(resume_offset)) {
+                            Ok(p) => {
+                                pos = p;
+                                // Seed the shrink heuristic so a file that is still at least as
+                                // large as our offset is not mistaken for a truncation.
+                                last_file_size = p;
+                            }
+                            Err(e) => {
+                                log::error!("Error seeking log to resume offset: {e}");
+                            }
+                        }
+                    }
+                    if let Some(position) = position {
+                        position.store(pos, Ordering::Relaxed);
+                    }
                     loop {
                         if cancel.load(Ordering::Relaxed) {
                             return;
@@ -459,11 +510,15 @@ impl<S: Submitter> Follower<S> {
                                     break;
                                 }
                             }
-                            Ok(_) => {
+                            Ok(n) => {
                                 let line = String::from_utf8_lossy(&raw);
                                 self.append_line(&line);
                                 last_read_time = SystemTime::now();
                                 last_file_size = file_size;
+                                pos += n as u64;
+                                if let Some(position) = position {
+                                    position.store(pos, Ordering::Relaxed);
+                                }
                             }
                             Err(e) => {
                                 log::error!("Error parsing log: {e}");

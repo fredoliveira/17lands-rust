@@ -78,7 +78,10 @@ The repo is a Cargo workspace with three crates under `crates/`:
 - Deviations from upstream are intentional and limited: token at the
   platform config dir (migrated from `~/.mtga_follower.ini`), no GUI prompts, no startup
   version check, no server-side error reporting, stdout/stderr logging only.
-- Two **additive, non-wire** seams exist for the desktop app and do not change any payload,
+- A few **additive, non-wire** seams exist for the desktop app and do not change any payload,
   dispatch order, or send timing (parity tests prove this): `config::{read_toml_token,
-  write_toml_token}` are `pub`, and `Follower::parse_log_cancellable` adds cooperative
-  cancellation (`parse_log` delegates to it with an always-false flag).
+  write_toml_token}` are `pub`; `Follower::parse_log_cancellable` adds cooperative
+  cancellation (`parse_log` delegates to it with an always-false flag); and
+  `Follower::parse_log_cancellable_from` adds resume-from-offset + read-position reporting
+  (`parse_log_cancellable` delegates to it with `start_offset = 0` / no position sink, which
+  is byte-identical to the original loop).
