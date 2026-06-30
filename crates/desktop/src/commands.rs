@@ -2,7 +2,7 @@
 
 use tauri::State;
 
-use seventeenlands_rust::config;
+use seventeenlands_core::config;
 
 use crate::logbridge::{self, LogLine};
 use crate::state::{AppState, StatusDto};

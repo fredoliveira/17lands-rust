@@ -9,8 +9,8 @@
 
 use std::collections::BTreeMap;
 
-use seventeenlands_rust::api_client::RecordingSubmitter;
-use seventeenlands_rust::follower::Follower;
+use seventeenlands_core::api_client::RecordingSubmitter;
+use seventeenlands_core::follower::Follower;
 
 fn main() {
     let path = std::env::args().nth(1).expect("usage: replay <logfile>");

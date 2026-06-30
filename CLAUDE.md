@@ -44,7 +44,7 @@ byte. After **any** change here — or whenever **upstream releases a new versio
 ```sh
 cargo test
 tools/oracle/run_oracle.sh <Player.log> out.jsonl      # capture Python client (local mock, sandboxed HOME)
-cargo run --example oracle_diff -- <Player.log> out.jsonl   # must report ALL ... byte-identical
+cargo run -p seventeenlands-core --example oracle_diff -- <Player.log> out.jsonl   # must report ALL ... byte-identical
 ```
 
 When upstream bumps its version or changes a handler:
@@ -54,16 +54,21 @@ When upstream bumps its version or changes a handler:
 
 ## Module map
 
-`main.rs` (CLI + processing loop) · `config.rs` (token) · `paths.rs` (log discovery) ·
-`follower.rs` (tailing, dispatch table, all handlers, game-state machine) ·
-`api_client.rs` (endpoints, envelope, gzip, JSON) · `retry.rs` · `time_parse.rs`.
-Each module's doc comment cites the relevant `mtga_follower.py` lines.
+The repo is a Cargo workspace with three crates under `crates/`:
 
-The repo is a Cargo workspace: the root package above is the wire-compatible core; `desktop/`
-is a separate **Tauri v2 menu-bar app** that reuses the core as a library (its `follower`,
-`config`, `paths`, `api_client`) and never touches payload construction. The GUI observes
-uploads structurally via an `ObservingSubmitter` (a `Submitter` decorator passed to
-`Follower::with_submitter`) and mirrors the `log` feed into the webview. See `desktop/README.md`.
+- **`crates/core`** (`seventeenlands-core`) — the wire-compatible library. Modules:
+  `config.rs` (token) · `paths.rs` (log discovery) · `follower.rs` (tailing, dispatch table,
+  all handlers, game-state machine) · `api_client.rs` (endpoints, envelope, gzip, JSON) ·
+  `retry.rs` · `time_parse.rs`. Each module's doc comment cites the relevant `mtga_follower.py`
+  lines. Parity tests + oracle examples live here (`tests/`, `examples/`).
+- **`crates/cli`** (`seventeenlands-rust`) — `main.rs` (CLI + processing loop). Produces the
+  installable `seventeenlands` binary; keeps this crate name so `cargo install` keeps working.
+- **`crates/desktop`** (`seventeenlands-desktop`) — a **Tauri v2 menu-bar app** reusing the core
+  as a library, never touching payload construction. It observes uploads structurally via an
+  `ObservingSubmitter` (a `Submitter` decorator passed to `Follower::with_submitter`) and mirrors
+  the `log` feed into the webview. See `crates/desktop/README.md`.
+
+`default-members` is core + cli, so bare `cargo` commands (and Linux CI) skip the desktop crate.
 
 ## Conventions
 

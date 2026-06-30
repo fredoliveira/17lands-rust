@@ -3014,14 +3014,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "seventeenlands-core"
+version = "0.1.2"
+dependencies = [
+ "chrono",
+ "dirs 5.0.1",
+ "flate2",
+ "log",
+ "regex",
+ "serde",
+ "serde_json",
+ "toml 0.8.23",
+ "ureq",
+ "uuid",
+]
+
+[[package]]
 name = "seventeenlands-desktop"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "log",
  "serde",
  "serde_json",
- "seventeenlands-rust",
+ "seventeenlands-core",
  "tauri",
  "tauri-build",
 ]
@@ -3033,16 +3049,9 @@ dependencies = [
  "anstyle",
  "chrono",
  "clap",
- "dirs 5.0.1",
  "env_logger",
- "flate2",
  "log",
- "regex",
- "serde",
- "serde_json",
- "toml 0.8.23",
- "ureq",
- "uuid",
+ "seventeenlands-core",
 ]
 
 [[package]]

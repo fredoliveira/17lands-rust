@@ -1,0 +1,34 @@
+[package]
+name = "seventeenlands-core"
+description = "Wire-compatible core for the 17Lands MTGA log client (follower, parser, REST envelope)"
+edition = "2024"
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "seventeenlands_core"
+path = "src/lib.rs"
+
+[dependencies]
+# HTTP — blocking, lightweight; matches the synchronous tail-and-POST loop.
+ureq = "2"
+# JSON — preserve_order keeps emitted object key order identical to Python dicts.
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+# gzip for the add_game endpoint.
+flate2 = "1"
+# Timestamp parsing + isoformat-compatible output.
+chrono = "0.4"
+# Line/timestamp regexes ported from the Python source.
+regex = "1"
+# Token config (TOML) at the platform config dir.
+toml = "0.8"
+# UUID v4 token validation.
+uuid = { version = "1", features = ["v4"] }
+# Logging (consumers install their own sink).
+log = "0.4"
+# Home / XDG config dir resolution.
+dirs = "5"

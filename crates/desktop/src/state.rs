@@ -8,9 +8,9 @@ use std::thread::JoinHandle;
 
 use serde::Serialize;
 
-use seventeenlands_rust::api_client::ApiClient;
-use seventeenlands_rust::follower::Follower;
-use seventeenlands_rust::{config, paths};
+use seventeenlands_core::api_client::ApiClient;
+use seventeenlands_core::follower::Follower;
+use seventeenlands_core::{config, paths};
 
 use crate::observer::{ObservingSubmitter, UploadStatus};
 

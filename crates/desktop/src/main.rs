@@ -11,7 +11,7 @@ use tauri::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Manager, WindowEvent};
 
-use seventeenlands_rust::{api_client, config};
+use seventeenlands_core::{api_client, config};
 use state::AppState;
 
 fn main() {
@@ -45,8 +45,8 @@ fn main() {
 
             // First run: if no token yet, open the window on Settings for onboarding.
             // Otherwise start following immediately.
-            let following_started = config::read_toml_token().is_some()
-                && app.state::<AppState>().start().is_ok();
+            let following_started =
+                config::read_toml_token().is_some() && app.state::<AppState>().start().is_ok();
 
             if !following_started {
                 if let Some(w) = app.get_webview_window("main") {

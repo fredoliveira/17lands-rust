@@ -19,14 +19,14 @@ and captures the 17Lands token through a GUI instead of the CLI's stdin prompt.
 
 ```sh
 # Never POST to the live API during dev — point at the local oracle mock.
-python3 ../tools/oracle/mock_server.py 8732 /tmp/desktop-out.jsonl &
+python3 ../../tools/oracle/mock_server.py 8732 /tmp/desktop-out.jsonl &
 SEVENTEENLANDS_HOST=http://127.0.0.1:8732 cargo tauri dev
 ```
 
 Dev/test env overrides (parallel to each other):
 - `SEVENTEENLANDS_HOST` — upload host (default: live API). **Always set this to the mock in dev.**
-- `SEVENTEENLANDS_LOG` — pin the followed log file (e.g. `../tests/fixtures/gaps.log`) so the app
-  can run headlessly without a real `Player.log`.
+- `SEVENTEENLANDS_LOG` — pin the followed log file (e.g. `../core/tests/fixtures/gaps.log`) so the
+  app can run headlessly without a real `Player.log`.
 
 ## Build a bundle
 
