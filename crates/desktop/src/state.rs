@@ -2,7 +2,7 @@
 //! shared upload status. Managed by Tauri (`app.manage`) so commands and the tray can reach it.
 
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 
@@ -20,6 +20,12 @@ pub struct AppState {
     following: Arc<AtomicBool>,
     thread: Mutex<Option<JoinHandle<()>>>,
     log_path: Mutex<Option<PathBuf>>,
+    /// Byte read-position published by the follower thread; lets stop→start resume the tail
+    /// instead of re-reading the whole log. Paired with `offset_path` so a stale offset is
+    /// only reused when the resolved log path is unchanged.
+    read_offset: Arc<AtomicU64>,
+    /// The log path that `read_offset` was recorded against.
+    offset_path: Mutex<Option<PathBuf>>,
     pub upload: Arc<Mutex<UploadStatus>>,
 }
 
@@ -46,6 +52,8 @@ impl AppState {
             following: Arc::new(AtomicBool::new(false)),
             thread: Mutex::new(None),
             log_path: Mutex::new(log_path),
+            read_offset: Arc::new(AtomicU64::new(0)),
+            offset_path: Mutex::new(None),
             upload: Arc::new(Mutex::new(UploadStatus::default())),
         }
     }
@@ -79,11 +87,22 @@ impl AppState {
             .ok_or("No Player.log found — set a log path in Settings")?;
         let path_str = path.to_string_lossy().to_string();
 
+        // Resume from the remembered offset only when the resolved path is unchanged since the
+        // last run; a different log (e.g. one picked in Settings) starts from the beginning so
+        // we never seek into an unrelated file.
+        let start_offset = if self.offset_path.lock().unwrap().as_deref() == Some(path.as_path()) {
+            self.read_offset.load(Ordering::Relaxed)
+        } else {
+            0
+        };
+        self.read_offset.store(start_offset, Ordering::Relaxed);
+
         self.cancel.store(false, Ordering::Relaxed);
         let cancel = self.cancel.clone();
         let following = self.following.clone();
         let host = self.host.clone();
         let upload = self.upload.clone();
+        let read_offset = self.read_offset.clone();
 
         let handle = std::thread::Builder::new()
             .name("17l-follower".into())
@@ -91,13 +110,20 @@ impl AppState {
                 following.store(true, Ordering::Relaxed);
                 let api = ObservingSubmitter::new(ApiClient::new(host.clone()), upload);
                 let mut follower = Follower::with_submitter(token, host, api);
-                follower.parse_log_cancellable(&path_str, true, &cancel);
+                follower.parse_log_cancellable_from(
+                    &path_str,
+                    true,
+                    &cancel,
+                    start_offset,
+                    Some(&read_offset),
+                );
                 following.store(false, Ordering::Relaxed);
             })
             .map_err(|e| e.to_string())?;
 
         *self.thread.lock().unwrap() = Some(handle);
-        *self.log_path.lock().unwrap() = Some(path);
+        *self.log_path.lock().unwrap() = Some(path.clone());
+        *self.offset_path.lock().unwrap() = Some(path);
         Ok(())
     }
 
