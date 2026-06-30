@@ -39,13 +39,36 @@ Dev/test env overrides (parallel to each other):
 - `SEVENTEENLANDS_LOG` — pin the followed log file (e.g. `../core/tests/fixtures/gaps.log`) so the
   app can run headlessly without a real `Player.log`.
 
-## Build a bundle
+## Build from source
+
+Prerequisites:
+
+- **Rust** (stable) — <https://rustup.rs>
+- **Linux only**: a system webview toolkit. On Debian/Ubuntu:
+  ```sh
+  sudo apt install libwebkit2gtk-4.1-dev build-essential libxdo-dev \
+    libssl-dev libayatana-appindicator3-dev librsvg2-dev
+  ```
+  (see <https://tauri.app/start/prerequisites/> for other distros). macOS/Windows need nothing extra.
+
+**Easiest — build and run** (no extra tooling; the UI is embedded, so the binary is
+self-contained). From the repo root:
 
 ```sh
-cargo tauri build # produces .app + .dmg under target/release/bundle/
+cargo build -p seventeenlands-desktop --release
+./target/release/seventeenlands-desktop        # launches the menu-bar app
+```
+
+Or via the task runner: `just desktop-run`.
+
+**Build a distributable bundle** (`.app`/`.dmg`/`.msi`) — this one needs the Tauri CLI:
+
+```sh
+cargo install tauri-cli --locked
+cd crates/desktop && cargo tauri build         # bundles under target/release/bundle/
 ```
 
 ## TODO
 
-- Code signing / notarization
+- Code signing / notarization (see [`packaging/homebrew/README.md`](../../packaging/homebrew/README.md))
 - Windows (`.msi`/NSIS) targets can be added to `tauri.conf.json` later.
