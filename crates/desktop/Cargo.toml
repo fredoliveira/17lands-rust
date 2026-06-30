@@ -1,0 +1,25 @@
+[package]
+name = "seventeenlands-desktop"
+description = "Menu-bar desktop app for the 17Lands MTGA log client"
+edition = "2021"
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+# Default bin is `src/main.rs`, named after the crate.
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri v2 with the system-tray / menu-bar feature and PNG icon decoding for the tray.
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# `std` provides `set_boxed_logger` for the webview log sink.
+log = { version = "0.4", features = ["std"] }
+chrono = "0.4"
+# The wire-compatible core: we reuse its follower, config, paths, and api_client unchanged.
+seventeenlands-core = { path = "../core" }

@@ -26,10 +26,10 @@ use std::path::{Path, PathBuf};
 
 use clap::Parser;
 
-use seventeenlands_rust::api_client;
-use seventeenlands_rust::config;
-use seventeenlands_rust::follower::{self, Follower};
-use seventeenlands_rust::paths;
+use seventeenlands_core::api_client;
+use seventeenlands_core::config;
+use seventeenlands_core::follower::{self, Follower};
+use seventeenlands_core::paths;
 
 /// CLI flags, mirroring the Python argparse interface.
 #[derive(Parser, Debug)]

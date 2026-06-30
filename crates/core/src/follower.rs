@@ -12,7 +12,9 @@
 
 use std::collections::HashMap;
 use std::io::{BufReader, Read};
+use std::sync::Arc;
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, SystemTime};
 
 use regex::Regex;
@@ -394,7 +396,27 @@ impl<S: Submitter> Follower<S> {
 
     /// Tail (or read once) a log file, dispatching complete entries (port of `parse_log`).
     pub fn parse_log(&mut self, filename: &str, follow: bool) {
+        // The plain entry point never cancels: a flag that is always `false` makes
+        // `parse_log_cancellable` behave exactly like the original loop. Existing callers
+        // and tests are unaffected.
+        let never = Arc::new(AtomicBool::new(false));
+        self.parse_log_cancellable(filename, follow, &never);
+    }
+
+    /// Like [`parse_log`](Self::parse_log) but honours a cooperative cancellation flag,
+    /// returning within one [`SLEEP_TIME`] tick once `cancel` is set. This is additive
+    /// control flow only: it changes nothing about which payloads are built or sent, so the
+    /// wire contract (and parity tests) are unaffected. Used by the desktop app's start/stop.
+    pub fn parse_log_cancellable(
+        &mut self,
+        filename: &str,
+        follow: bool,
+        cancel: &Arc<AtomicBool>,
+    ) {
         loop {
+            if cancel.load(Ordering::Relaxed) {
+                return;
+            }
             self.reinitialize();
             let mut last_read_time = SystemTime::now();
             let mut last_file_size: u64 = 0;
@@ -403,6 +425,9 @@ impl<S: Submitter> Follower<S> {
                 Ok(file) => {
                     let mut reader = BufReader::new(file);
                     loop {
+                        if cancel.load(Ordering::Relaxed) {
+                            return;
+                        }
                         let mut raw = Vec::new();
                         let read = read_until_newline(&mut reader, &mut raw);
                         let file_size = std::fs::metadata(filename).map(|m| m.len()).unwrap_or(0);

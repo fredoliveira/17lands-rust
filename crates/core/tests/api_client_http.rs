@@ -12,7 +12,7 @@ use std::thread;
 
 use serde_json::json;
 
-use seventeenlands_rust::api_client::{ApiClient, Submitter, to_python_json_vec};
+use seventeenlands_core::api_client::{ApiClient, Submitter, to_python_json_vec};
 
 /// A captured HTTP request.
 struct CapturedRequest {

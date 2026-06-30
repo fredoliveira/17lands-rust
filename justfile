@@ -22,18 +22,33 @@ check:
 
 # --- Run -------------------------------------------------------------------
 
-# Build and run, following the auto-detected Player.log. Extra args pass through,
+# Build and run the CLI, following the auto-detected Player.log. Extra args pass through,
 # e.g. `just run --once` or `just run -l path/to/Player.log`.
 run *ARGS:
-    cargo run -- {{ARGS}}
+    cargo run -p seventeenlands-rust -- {{ARGS}}
 
 # Parse a specific log once and exit (no tailing).
 run-once LOG:
-    cargo run -- --log-file {{LOG}} --once
+    cargo run -p seventeenlands-rust -- --log-file {{LOG}} --once
 
 # Release run with passthrough args.
 run-release *ARGS:
-    cargo run --release -- {{ARGS}}
+    cargo run --release -p seventeenlands-rust -- {{ARGS}}
+
+# --- Desktop app -----------------------------------------------------------
+
+# Build and run the desktop app (release; self-contained binary, no Tauri CLI needed).
+desktop-run:
+    cargo run -p seventeenlands-desktop --release
+
+# Run the Tauri desktop app in dev (point at the local mock — never the live API).
+desktop-dev:
+    cd crates/desktop && SEVENTEENLANDS_HOST=http://127.0.0.1:8732 cargo tauri dev
+
+# Build the desktop bundle (.app + .dmg on macOS). Needs the Tauri CLI:
+# cargo install tauri-cli --locked
+desktop-build:
+    cd crates/desktop && cargo tauri build
 
 # --- Test / quality --------------------------------------------------------
 
@@ -64,14 +79,14 @@ oracle LOG OUT="out.jsonl":
 
 # Diff this client's output against a captured oracle file; must report byte-identical.
 oracle-diff LOG OUT="out.jsonl":
-    cargo run --example oracle_diff -- {{LOG}} {{OUT}}
+    cargo run -p seventeenlands-core --example oracle_diff -- {{LOG}} {{OUT}}
 
 # Full parity check: capture the oracle, then diff against it.
 parity LOG OUT="out.jsonl": (oracle LOG OUT) (oracle-diff LOG OUT)
 
 # Replay a log through the client offline (the replay example).
 replay LOG:
-    cargo run --example replay -- {{LOG}}
+    cargo run -p seventeenlands-core --example replay -- {{LOG}}
 
 # --- Housekeeping ----------------------------------------------------------
 
