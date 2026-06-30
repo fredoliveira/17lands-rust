@@ -37,6 +37,12 @@ fn main() {
         .setup(|app| {
             logbridge::attach(app.handle().clone());
 
+            // Show the crate version in the window title (e.g. "17Lands v0.1.1"). Done at
+            // runtime since a static tauri.conf.json title can't interpolate the version.
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.set_title(&format!("17Lands v{}", env!("CARGO_PKG_VERSION")));
+            }
+
             // Menu-bar app: no dock icon on macOS.
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
@@ -79,7 +85,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     // Standard macOS menu-bar behavior: a left-click opens the menu. The menu's
     // "Show Log Window" item keeps the window reachable.
     let mut builder = TrayIconBuilder::with_id("main")
-        .tooltip("17Lands")
+        .tooltip(format!("17Lands v{}", env!("CARGO_PKG_VERSION")))
         .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(handle_menu);

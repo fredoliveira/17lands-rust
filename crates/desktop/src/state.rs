@@ -39,6 +39,8 @@ pub struct StatusDto {
     pub upload_count: u64,
     pub last_endpoint: Option<String>,
     pub last_time: Option<String>,
+    /// Crate version (e.g. "0.1.1"), rendered in the in-window header.
+    pub app_version: String,
 }
 
 impl AppState {
@@ -153,6 +155,7 @@ impl AppState {
             upload_count: u.count,
             last_endpoint: u.last_endpoint,
             last_time: u.last_time,
+            app_version: env!("CARGO_PKG_VERSION").to_string(),
         }
     }
 }
