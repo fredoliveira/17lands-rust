@@ -67,6 +67,11 @@ async function refreshStatus() {
     : "";
 
   $("host").textContent = s.host;
+  if (s.app_version) {
+    const label = "17Lands v" + s.app_version;
+    $("brand-name").textContent = label;
+    document.title = label;
+  }
   if (s.log_path && !$("log-path").value) $("log-path").placeholder = s.log_path;
 }
 
