@@ -8,7 +8,7 @@ mod observer;
 mod state;
 
 use tauri::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
-use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager, WindowEvent};
 
 use seventeenlands_core::{api_client, config};
@@ -76,21 +76,13 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let quit = MenuItem::with_id(app, "quit", "Quit 17Lands", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&show, &toggle, &settings, &sep, &quit])?;
 
+    // Standard macOS menu-bar behavior: a left-click opens the menu. The menu's
+    // "Show Log Window" item keeps the window reachable.
     let mut builder = TrayIconBuilder::with_id("main")
         .tooltip("17Lands")
         .menu(&menu)
-        .show_menu_on_left_click(false)
-        .on_menu_event(handle_menu)
-        .on_tray_icon_event(|tray, event| {
-            if let TrayIconEvent::Click {
-                button: MouseButton::Left,
-                button_state: MouseButtonState::Up,
-                ..
-            } = event
-            {
-                toggle_window(tray.app_handle());
-            }
-        });
+        .show_menu_on_left_click(true)
+        .on_menu_event(handle_menu);
 
     if let Some(icon) = app.default_window_icon() {
         builder = builder.icon(icon.clone()).icon_as_template(true);
@@ -128,16 +120,5 @@ fn show_window(app: &AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.show();
         let _ = w.set_focus();
-    }
-}
-
-fn toggle_window(app: &AppHandle) {
-    if let Some(w) = app.get_webview_window("main") {
-        if w.is_visible().unwrap_or(false) {
-            let _ = w.hide();
-        } else {
-            let _ = w.show();
-            let _ = w.set_focus();
-        }
     }
 }
