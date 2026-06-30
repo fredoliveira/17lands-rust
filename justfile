@@ -37,11 +37,16 @@ run-release *ARGS:
 
 # --- Desktop app -----------------------------------------------------------
 
+# Build and run the desktop app (release; self-contained binary, no Tauri CLI needed).
+desktop-run:
+    cargo run -p seventeenlands-desktop --release
+
 # Run the Tauri desktop app in dev (point at the local mock — never the live API).
 desktop-dev:
     cd crates/desktop && SEVENTEENLANDS_HOST=http://127.0.0.1:8732 cargo tauri dev
 
-# Build the desktop bundle (.app + .dmg on macOS).
+# Build the desktop bundle (.app + .dmg on macOS). Needs the Tauri CLI:
+# cargo install tauri-cli --locked
 desktop-build:
     cd crates/desktop && cargo tauri build
 
