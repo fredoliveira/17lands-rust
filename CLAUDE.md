@@ -2,10 +2,11 @@
 
 ## What this is
 
-`seventeenlands-rust` is a Rust port of the official 17Lands MTG Arena log client. It is a
-**drop-in replacement**: it tails the same `Player.log`, parses the same messages, and POSTs
-the **same payloads to the same endpoints** as the original, so the 17Lands server accepts
-its uploads identically.
+This project is a Rust port of the official 17Lands MTG Arena log client. The core (and the
+`seventeenlands` CLI built on it) is a **drop-in replacement**: it tails the same `Player.log`,
+parses the same messages, and POSTs the **same payloads to the same endpoints** as the original,
+so the 17Lands server accepts its uploads identically. A desktop app reuses the same core (see
+Module map).
 
 ## What it's based on (track this for compatibility)
 
