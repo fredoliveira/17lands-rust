@@ -17,7 +17,7 @@ from wanting a single binary distribution that requires no old python dependenci
 brew install fredoliveira/tap/seventeenlands-rust
 
 # From source (builds and installs the binary onto your PATH):
-cargo install --git https://github.com/fredoliveira/17lands-rust
+cargo install --git https://github.com/fredoliveira/17lands-rust seventeenlands-rust
 ```
 
 ## Running
@@ -33,12 +33,25 @@ to be captured.
 ### Running from the source code directly
 
 ```sh
-# Build a release version
-cargo build --release
+# Build a release version of the CLI
+cargo build --release -p seventeenlands-rust
 
 # Start the built artifact
 ./target/release/seventeenlands
 ```
+
+## Repository layout
+
+This is a Cargo workspace producing two artifacts from a shared core:
+
+| Crate | Path | Artifact |
+|-------|------|----------|
+| `seventeenlands-core` | `crates/core` | shared library (follower, parser, REST envelope) |
+| `seventeenlands-rust` | `crates/cli` | the `seventeenlands` CLI |
+| `seventeenlands-desktop` | `crates/desktop` | Tauri menu-bar app (see its [README](crates/desktop/README.md)) |
+
+Bare `cargo build`/`test` build the CLI + core; build the desktop app with
+`-p seventeenlands-desktop` (or `just desktop-build`).
 
 ## Credits & license
 

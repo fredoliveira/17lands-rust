@@ -12,9 +12,9 @@
 
 use std::collections::HashMap;
 use std::io::{BufReader, Read};
+use std::sync::Arc;
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use regex::Regex;
@@ -407,7 +407,12 @@ impl<S: Submitter> Follower<S> {
     /// returning within one [`SLEEP_TIME`] tick once `cancel` is set. This is additive
     /// control flow only: it changes nothing about which payloads are built or sent, so the
     /// wire contract (and parity tests) are unaffected. Used by the desktop app's start/stop.
-    pub fn parse_log_cancellable(&mut self, filename: &str, follow: bool, cancel: &Arc<AtomicBool>) {
+    pub fn parse_log_cancellable(
+        &mut self,
+        filename: &str,
+        follow: bool,
+        cancel: &Arc<AtomicBool>,
+    ) {
         loop {
             if cancel.load(Ordering::Relaxed) {
                 return;

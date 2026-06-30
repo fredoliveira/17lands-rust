@@ -1,49 +1,18 @@
-[package]
-name = "seventeenlands-rust"
+# Virtual workspace. Two shipped artifacts — the `seventeenlands` CLI (`crates/cli`) and the
+# Tauri desktop app (`crates/desktop`) — share the wire-compatible core (`crates/core`).
+#
+# `default-members` is the CLI + core only, so bare `cargo build/test/clippy` (and CI) skip the
+# desktop crate, which needs a system webview toolkit (webkit2gtk on Linux). Build it explicitly
+# with `-p seventeenlands-desktop` or via the desktop CI job.
+[workspace]
+resolver = "2"
+members = ["crates/core", "crates/cli", "crates/desktop"]
+default-members = ["crates/core", "crates/cli"]
+
+# Metadata shared by all workspace crates (each crate inherits with `field.workspace = true`).
+[workspace.package]
 version = "0.1.1"
-edition = "2024"
-description = "Rust port of the 17Lands MTGA log client (uploads MTG Arena data to 17lands.com)"
 license = "GPL-3.0-only"
 repository = "https://github.com/fredoliveira/17lands-rust"
-readme = "README.md"
-keywords = ["mtg", "mtga", "17lands", "magic", "draft"]
-categories = ["command-line-utilities", "games"]
 authors = ["Fred Oliveira <fred@helloform.com>"]
 rust-version = "1.85"
-
-# The repo is a workspace: the wire-compatible core stays the root package; the desktop
-# (Tauri menu-bar app) lives in its own member crate and depends on this one as a library.
-# An explicit resolver is required because the members span editions (core 2024, desktop 2021).
-[workspace]
-members = ["desktop"]
-resolver = "2"
-
-[[bin]]
-name = "seventeenlands"
-path = "src/main.rs"
-
-[dependencies]
-# HTTP — blocking, lightweight; matches the synchronous tail-and-POST loop.
-ureq = "2"
-# JSON — preserve_order keeps emitted object key order identical to Python dicts.
-serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1", features = ["preserve_order"] }
-# gzip for the add_game endpoint.
-flate2 = "1"
-# Timestamp parsing + isoformat-compatible output.
-chrono = "0.4"
-# Line/timestamp regexes ported from the Python source.
-regex = "1"
-# CLI: --log-file / --host / --token / --once.
-clap = { version = "4", features = ["derive"] }
-# Token config at the platform config dir.
-toml = "0.8"
-# UUID v4 token validation.
-uuid = { version = "1", features = ["v4"] }
-# Logging to stdout/stderr (no rotation).
-log = "0.4"
-env_logger = "0.11"
-# Console color styling for the pretty log formatter (already in-tree via env_logger).
-anstyle = "1"
-# Home / XDG config dir resolution.
-dirs = "5"

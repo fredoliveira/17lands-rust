@@ -75,7 +75,7 @@ impl Log for WebviewLogger {
             level: record.level().to_string(),
             target: target.to_string(),
             msg: record.args().to_string(),
-            chatter: target == seventeenlands_rust::follower::CHATTER,
+            chatter: target == seventeenlands_core::follower::CHATTER,
         };
 
         if let Ok(mut buf) = BUFFER.lock() {

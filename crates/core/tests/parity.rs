@@ -19,8 +19,8 @@
 
 use serde_json::{Value, json};
 
-use seventeenlands_rust::api_client::{RecordedCall, RecordingSubmitter, to_python_json_string};
-use seventeenlands_rust::follower::Follower;
+use seventeenlands_core::api_client::{RecordedCall, RecordingSubmitter, to_python_json_string};
+use seventeenlands_core::follower::Follower;
 
 const TOKEN: &str = "00000000-0000-4000-8000-000000000000";
 const ENVELOPE_KEYS: &[&str] = &[
@@ -150,7 +150,7 @@ fn gap_branch_parity() {
 /// add_game is the only gzipped endpoint; verify the gzip flag flows through the recorder.
 #[test]
 fn add_game_uses_gzip_flag() {
-    use seventeenlands_rust::api_client::Submitter;
+    use seventeenlands_core::api_client::Submitter;
     let mut rec = RecordingSubmitter::new();
     rec.submit_game_result(json!({"match_id": "m"}));
     assert_eq!(rec.calls.len(), 1);
