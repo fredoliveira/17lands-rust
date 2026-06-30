@@ -4,6 +4,17 @@ A Tauri v2 menu-bar / notification-area app that wraps the rust log follower cor
 The follower runs on a background thread, shows a live log feed in an on-demand window, 
 and captures the 17Lands token through a GUI instead of the CLI's stdin prompt.
 
+## Install
+
+```sh
+brew install --cask fredoliveira/tap/seventeenlands-desktop
+```
+
+The release workflow attaches a universal `.dmg` (Intel + Apple Silicon). The app is not yet
+Apple-notarized, so on first launch open it via right-click → Open (or
+`xattr -dr com.apple.quarantine "/Applications/17Lands.app"`). See
+[`packaging/homebrew/README.md`](../../packaging/homebrew/README.md).
+
 ## Architecture
 
 | File | Role |

@@ -13,10 +13,13 @@ from wanting a single binary distribution that requires no old python dependenci
 ## Install
 
 ```sh
-# Via Homebrew (macOS/Linux):
+# CLI via Homebrew (macOS/Linux):
 brew install fredoliveira/tap/seventeenlands-rust
 
-# From source (builds and installs the binary onto your PATH):
+# Desktop menu-bar app via Homebrew (macOS):
+brew install --cask fredoliveira/tap/seventeenlands-desktop
+
+# CLI from source (builds and installs the binary onto your PATH):
 cargo install --git https://github.com/fredoliveira/17lands-rust seventeenlands-rust
 ```
 
