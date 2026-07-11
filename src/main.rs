@@ -26,10 +26,11 @@ use std::path::{Path, PathBuf};
 
 use clap::Parser;
 
-use seventeenlands_rust::api_client;
+use seventeenlands_rust::api_client::{self, ApiClient, Submitter};
 use seventeenlands_rust::config;
 use seventeenlands_rust::follower::{self, Follower};
 use seventeenlands_rust::paths;
+use seventeenlands_rust::tee::{LocalSink, Tee};
 
 /// CLI flags, mirroring the Python argparse interface.
 #[derive(Parser, Debug)]
@@ -51,6 +52,12 @@ struct Args {
     #[arg(long)]
     once: bool,
 
+    /// Also forward every parsed event to a local HTTP sink (e.g. a live draft
+    /// companion). Blobs POST to `<URL>/<event>`, like `<URL>/add_human_draft_pack`.
+    /// Fire-and-forget: failures never affect the 17Lands upload.
+    #[arg(long, value_name = "URL")]
+    tee: Option<String>,
+
     /// Use the detailed developer log format (full date, milliseconds, level, module
     /// target) instead of the clean default. Handy for debugging / parity work.
     #[arg(short = 'v', long)]
@@ -71,7 +78,22 @@ fn main() {
     );
 
     // The startup version check is intentionally dropped. The client just runs.
-    processing_loop(&args, token);
+    match &args.tee {
+        Some(url) => {
+            log::info!(target: follower::CHATTER, "Teeing events to {url}");
+            let submitter = Tee::new(ApiClient::new(args.host.clone()), LocalSink::new(url));
+            let follower = Follower::with_submitter(token, args.host.clone(), submitter);
+            processing_loop(&args, follower);
+        }
+        None => {
+            let follower = Follower::with_submitter(
+                token,
+                args.host.clone(),
+                ApiClient::new(args.host.clone()),
+            );
+            processing_loop(&args, follower);
+        }
+    }
 }
 
 /// stdout/stderr logging only — no rotating file handler. The console output is
@@ -135,16 +157,15 @@ fn init_logging(verbose: bool) {
     builder.init();
 }
 
-/// Port of Python `processing_loop`.
-fn processing_loop(args: &Args, token: String) {
+/// Port of Python `processing_loop`, generic over the submitter so the tee'd and plain
+/// paths share one implementation.
+fn processing_loop<S: Submitter>(args: &Args, mut follower: Follower<S>) {
     let filepaths: Vec<PathBuf> = match &args.log_file {
         Some(path) => vec![PathBuf::from(path)],
         None => paths::possible_current_filepaths(),
     };
 
     let follow = !args.once;
-
-    let mut follower = Follower::new(token, args.host.clone());
 
     // "Normal mode": no explicit log file, default host, and following. Parse the first
     // existing previous-log once at startup to catch up on missed events.

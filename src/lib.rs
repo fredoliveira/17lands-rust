@@ -27,4 +27,5 @@ pub mod config;
 pub mod follower;
 pub mod paths;
 pub mod retry;
+pub mod tee;
 pub mod time_parse;
