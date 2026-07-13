@@ -30,6 +30,17 @@ seventeenlands
 **Detailed Logs** must be enabled in MTGA (gear → Account → "Detailed Logs") for game data
 to be captured.
 
+### Forwarding events to a local app
+
+`--tee <URL>` also POSTs every parsed event to a local HTTP sink (e.g. a live draft
+companion), as JSON at `<URL>/<event>` — for example `http://localhost:3000/add_human_draft_pack`:
+
+```sh
+seventeenlands --tee http://localhost:3000
+```
+
+This is fire-and-forget: a missing or slow sink never affects the 17Lands upload.
+
 ### Running from the source code directly
 
 ```sh
