@@ -103,9 +103,7 @@ impl Drop for LocalSink {
 /// The first failure logs at WARN so a missing sink is visible; repeats stay at DEBUG
 /// to keep the feed calm while the companion app is closed.
 fn drain(base_url: String, rx: Receiver<(String, Vec<u8>)>) {
-    let agent = ureq::AgentBuilder::new()
-        .timeout(LOCAL_TIMEOUT)
-        .build();
+    let agent = ureq::AgentBuilder::new().timeout(LOCAL_TIMEOUT).build();
     let mut warned = false;
 
     for (name, body) in rx {
@@ -189,7 +187,10 @@ mod tests {
 
         // Primary saw the call unchanged.
         assert_eq!(tee.primary.calls.len(), 1);
-        assert_eq!(tee.primary.calls[0].endpoint, endpoints::ADD_HUMAN_DRAFT_PACK);
+        assert_eq!(
+            tee.primary.calls[0].endpoint,
+            endpoints::ADD_HUMAN_DRAFT_PACK
+        );
 
         // Drop flushes the queue; then the sink must have the local copy.
         drop(tee);
