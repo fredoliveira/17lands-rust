@@ -1,6 +1,6 @@
 [package]
 name = "seventeenlands-rust"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Rust port of the 17Lands MTGA log client (uploads MTG Arena data to 17lands.com)"
 license = "GPL-3.0-only"

@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-13
+
+### Added
+- `--tee <URL>`: also forward every parsed event to a local HTTP sink (e.g. a live draft
+  companion app). Blobs POST as JSON to `<URL>/<event>`; fire-and-forget, so a missing or
+  slow sink never affects the 17Lands upload.
+
 ## [0.1.1] - 2026-06-27
 
 ### Changed
@@ -28,6 +35,7 @@ upstream `CLIENT_VERSION = "0.1.44.p"`.
 - Oracle parity tooling (`tools/oracle/`, `examples/oracle_diff.rs`) and an offline
   `replay` example.
 
-[Unreleased]: https://github.com/fredoliveira/17lands-rust/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/fredoliveira/17lands-rust/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/fredoliveira/17lands-rust/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/fredoliveira/17lands-rust/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/fredoliveira/17lands-rust/releases/tag/v0.1.0
