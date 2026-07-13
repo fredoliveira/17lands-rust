@@ -1,3 +1,6 @@
+# Builds and publishes the CLI tarballs/zip for a `v*` tag. The desktop .dmg is built by
+# the separate release-desktop.yml workflow (same tag trigger), which attaches its asset
+# to this same release — so a Tauri/bundling failure never blocks the CLI release.
 name: Release
 
 on:
@@ -56,43 +59,9 @@ jobs:
           name: seventeenlands-rust-${{ matrix.target }}
           path: seventeenlands-rust-${{ matrix.target }}.*
 
-  desktop:
-    name: desktop bundle (macos universal)
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin,aarch64-apple-darwin
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version "^2" --locked
-
-      - name: Build universal .dmg
-        working-directory: crates/desktop
-        run: cargo tauri build --target universal-apple-darwin --bundles dmg
-
-      - name: Stage .dmg under a stable name
-        run: |
-          dmg="$(find target/universal-apple-darwin/release/bundle/dmg -name '*.dmg' | head -n1)"
-          test -n "$dmg" || { echo "no .dmg produced"; exit 1; }
-          mkdir -p dist
-          cp "$dmg" "dist/17Lands-universal.dmg"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: seventeenlands-desktop-universal
-          path: dist/17Lands-universal.dmg
-
   release:
     name: Publish release
-    needs: [build, desktop]
+    needs: [build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:

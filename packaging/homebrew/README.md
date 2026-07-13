@@ -69,8 +69,10 @@ brew test seventeenlands-rust
 
 ## On every release — desktop cask
 
-The release workflow attaches a single universal asset, `17Lands-universal.dmg`
-(built by the `desktop` job). In `seventeenlands-desktop.rb`, bump `version` to match
+The `Release Desktop` workflow (`release-desktop.yml`, triggered by the same `v*` tag as
+the CLI release) attaches a single universal asset, `17Lands-universal.dmg`, to the
+release. If the desktop build failed while the CLI release succeeded, re-run it via
+workflow_dispatch and it will attach the `.dmg` to the existing release. In `seventeenlands-desktop.rb`, bump `version` to match
 the tag (without the `v`) and update `sha256`:
 
 ```sh
