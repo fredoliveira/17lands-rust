@@ -3015,7 +3015,7 @@ dependencies = [
 
 [[package]]
 name = "seventeenlands-core"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "chrono",
  "dirs 5.0.1",
@@ -3031,7 +3031,7 @@ dependencies = [
 
 [[package]]
 name = "seventeenlands-desktop"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "chrono",
  "log",
@@ -3044,7 +3044,7 @@ dependencies = [
 
 [[package]]
 name = "seventeenlands-rust"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "anstyle",
  "chrono",
