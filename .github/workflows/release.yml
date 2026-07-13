@@ -75,3 +75,42 @@ jobs:
         with:
           files: dist/*
           generate_release_notes: true
+
+  # Push the formula bump to fredoliveira/homebrew-tap. Needs a TAP_PUSH_TOKEN secret
+  # (fine-grained PAT with contents:write on the tap repo); skips quietly if unset.
+  tap:
+    name: Bump Homebrew formula
+    needs: [release]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Regenerate formula and push to the tap
+        env:
+          TAP_PUSH_TOKEN: ${{ secrets.TAP_PUSH_TOKEN }}
+        run: |
+          if [ -z "$TAP_PUSH_TOKEN" ]; then
+            echo "TAP_PUSH_TOKEN secret not set; skipping tap bump"
+            exit 0
+          fi
+          version="${GITHUB_REF_NAME#v}"
+          sha() { shasum -a 256 "dist/$1" | cut -d' ' -f1; }
+          git clone "https://x-access-token:${TAP_PUSH_TOKEN}@github.com/fredoliveira/homebrew-tap.git" tap
+          sh packaging/homebrew/generate.sh formula "$version" \
+            "$(sha seventeenlands-rust-aarch64-apple-darwin.tar.gz)" \
+            "$(sha seventeenlands-rust-x86_64-apple-darwin.tar.gz)" \
+            "$(sha seventeenlands-rust-x86_64-unknown-linux-gnu.tar.gz)" \
+            > tap/Formula/seventeenlands-rust.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/seventeenlands-rust.rb
+          git commit -m "seventeenlands-rust ${version}"
+          # The desktop workflow may push its cask bump concurrently; rebase and retry.
+          for _ in 1 2 3; do git push && break; git pull --rebase; done
