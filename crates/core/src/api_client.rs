@@ -13,7 +13,7 @@
 //! `(", ", ": ")` separators. We serialize with a matching formatter so ASCII payloads are
 //! byte-identical to the Python client. (Python also defaults to `ensure_ascii=True`,
 //! \u-escaping non-ASCII; we emit raw UTF-8 instead — still valid JSON the server parses
-//! identically. The oracle harness compares *parsed* values, so this is immaterial.)
+//! identically.)
 
 #![allow(dead_code)]
 
@@ -252,7 +252,7 @@ pub struct RecordedCall {
 }
 
 /// A [`Submitter`] that records `(endpoint, payload, use_gzip)` instead of sending, for the
-/// fixture/oracle parity tests. Lives in `src` (not `#[cfg(test)]`) so both unit
+/// fixture parity tests. Lives in `src` (not `#[cfg(test)]`) so both unit
 /// tests and the `tests/parity.rs` integration harness share one definition.
 #[derive(Debug, Default)]
 pub struct RecordingSubmitter {

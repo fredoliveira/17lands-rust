@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Mock 17Lands API server for the oracle harness.
+"""Mock 17Lands API server for local development (never POST to the live API in dev).
 
-Captures every POST the reference Python `seventeenlands` client makes (decompressing
-gzip), appending one JSON line `{"endpoint": "...", "body": <parsed json>}` per request to
-the output file. Answers the startup version-check GET so the client proceeds, and 200s
-everything else.
+Captures every POST the client makes (decompressing gzip), appending one JSON line
+`{"endpoint": "...", "body": <parsed json>}` per request to the output file. Answers the
+startup version-check GET so upstream-compatible clients proceed, and 200s everything else.
 
 Usage: mock_server.py <port> <output.jsonl>
 """

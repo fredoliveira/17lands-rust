@@ -7,9 +7,9 @@
 //! branches that are **absent** from the real sample logs (bot draft, combined human draft,
 //! claim prize, event course, inventory, collection); the branches that *are* present in the
 //! real logs — full games (§8 game-state machine), Draft.Notify packs, EventPlayerDraftMakePick
-//! picks, deck submission, rank, account, ongoing events, player progress — are validated
-//! byte-for-byte against the live Python client by the oracle harness (`tools/oracle/`,
-//! `examples/oracle_diff.rs`).
+//! picks, deck submission, rank, account, ongoing events, player progress — were validated
+//! byte-for-byte against the live Python client during the port (via a since-removed oracle
+//! harness).
 //!
 //! The expected payloads below were captured from the reference Python client run against the
 //! same fixture (so they encode Python's exact field order, null-vs-absent, and int coercion).
@@ -134,7 +134,7 @@ fn gap_branch_parity() {
         assert_eq!(obj["client_version"], json!("0.1.44.p"));
         assert_eq!(obj["player_id"], json!("ACC123"), "player_id at [{i}]");
         assert_eq!(obj["event_time"], Value::Null);
-        // `time` / `utc_time` are ISO strings (exact values are proven by the oracle diff;
+        // `time` / `utc_time` are ISO strings (exact values were proven against the Python client;
         // here we keep the assertion timezone-independent and portable).
         assert!(obj["time"].as_str().unwrap().contains('T'), "time at [{i}]");
         assert!(

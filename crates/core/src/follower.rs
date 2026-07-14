@@ -415,7 +415,7 @@ impl<S: Submitter> Follower<S> {
     ) {
         // Delegate with `start_offset = 0` (read from the beginning) and no position sink:
         // this reproduces the original loop byte-for-byte for every existing caller (CLI,
-        // parity/oracle tests). See [`parse_log_cancellable_from`].
+        // parity tests). See [`parse_log_cancellable_from`].
         self.parse_log_cancellable_from(filename, follow, cancel, 0, None);
     }
 

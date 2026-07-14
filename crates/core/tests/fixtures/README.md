@@ -12,8 +12,9 @@ account id / screen name / token, **never commit them**):
 
 Derive sanitized fixtures from these. Sanitize at minimum: the `Updated account.
 DisplayName:…, AccountID:…, Token:…` line, screen names in `reservedPlayers`, and the
-token field. Use the Python client as the oracle (point it at a local mock server, capture
-payloads) and apply the same sanitization to both sides before diffing.
+token field. Derive the expected payloads from the reference Python source
+(`mtga_follower.py` — exact field order, null-vs-absent, coercions), applying the same
+sanitization to both the log lines and the expectations.
 
 ## Coverage map (what the real logs contain)
 

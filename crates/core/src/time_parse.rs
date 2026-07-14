@@ -5,8 +5,8 @@
 //! - `extract_time`: try the full `TIME_FORMATS` list (mtga_follower.py:146-158).
 //! - `maybe_get_utc_timestamp`: ms-since-epoch / .NET-ticks / ISO-8601 branches.
 //! - Output matches Python `datetime.isoformat()`: naive (no tz offset), no microseconds
-//!   when zero, exactly 6 fractional digits when present. Validated against the oracle
-//!   — e.g. ticks `639179113099292149` → `2026-06-24T15:21:49.929214`.
+//!   when zero, exactly 6 fractional digits when present. Validated against the reference
+//!   Python client — e.g. ticks `639179113099292149` → `2026-06-24T15:21:49.929214`.
 
 #![allow(dead_code)]
 
@@ -40,8 +40,9 @@ pub fn epoch_zero() -> NaiveDateTime {
 
 /// `int(1000 * datetime.datetime(3000, 1, 1).timestamp())` (`mtga_follower.py:160`).
 ///
-/// Local-timezone dependent, like Python; computed at runtime so it matches the oracle on
-/// the same machine. Below this value a timestamp is ms-since-epoch; above it, .NET ticks.
+/// Local-timezone dependent, like Python; computed at runtime so it matches the Python
+/// client on the same machine. Below this value a timestamp is ms-since-epoch; above it,
+/// .NET ticks.
 fn max_milliseconds_since_epoch() -> i64 {
     let dt = NaiveDate::from_ymd_opt(3000, 1, 1)
         .unwrap()
@@ -191,7 +192,7 @@ fn round_half_even(x: f64) -> i64 {
 }
 
 /// Best-effort ISO-8601 parse (Python `dateutil.parser.isoparse`). This branch is not
-/// exercised by the available fixtures; revisit against the oracle if it ever fires.
+/// exercised by the available fixtures; revisit against the Python source if it ever fires.
 fn isoparse(s: &str) -> Option<NaiveDateTime> {
     if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(s) {
         return Some(dt.naive_utc());
@@ -262,7 +263,7 @@ mod tests {
     /// `from_milliseconds` does. The ms branch mirrors Python `fromtimestamp(ms*0.001)`,
     /// which is **local-timezone dependent**, so the expectation must follow the local
     /// zone too — hardcoding an absolute string would break on any runner not in the
-    /// author's zone (e.g. UTC CI). Validated against the oracle on the same machine.
+    /// author's zone (e.g. UTC CI). Validated against the Python client on the same machine.
     fn local_ms_isoformat(ms: i64) -> String {
         isoformat(
             &Local

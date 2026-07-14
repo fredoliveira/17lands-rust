@@ -29,8 +29,8 @@ Apple-notarized, so on first launch open it via right-click → Open (or
 ## Develop
 
 ```sh
-# Never POST to the live API during dev — point at the local oracle mock.
-python3 ../../tools/oracle/mock_server.py 8732 /tmp/desktop-out.jsonl &
+# Never POST to the live API during dev — point at the local mock server.
+python3 ../../tools/mock_server.py 8732 /tmp/desktop-out.jsonl &
 RECALL_HOST=http://127.0.0.1:8732 cargo tauri dev
 ```
 

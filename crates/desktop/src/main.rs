@@ -23,7 +23,7 @@ fn main() {
     logbridge::WebviewLogger::install();
 
     // Dev safety: never POST to the live API during development. Set RECALL_HOST
-    // (e.g. the local oracle mock) to override the default live host.
+    // (e.g. the local mock server) to override the default live host.
     let host =
         std::env::var("RECALL_HOST").unwrap_or_else(|_| api_client::DEFAULT_HOST.to_string());
 

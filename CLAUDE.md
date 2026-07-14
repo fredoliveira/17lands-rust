@@ -15,10 +15,9 @@ Upstream: **https://github.com/rconroy293/mtga-log-client** (the Python `sevente
 package). This port targets upstream **`CLIENT_VERSION = "0.1.44.p"`**, sent verbatim in
 every payload so the server treats us as the trusted Python client.
 
-References available while working:
-- Python source we ported from: `/Users/fred/code/oss/17l/src/python/seventeenlands/`
-  (`mtga_follower.py`, `api_client.py`, `retry_utils.py`) — the authoritative behavior.
-- Runnable oracle: the brew-installed `seventeenlands` binary (same 0.1.44 code).
+Reference available while working: the Python source we ported from, at
+`/Users/fred/code/oss/17l/src/python/seventeenlands/` (`mtga_follower.py`, `api_client.py`,
+`retry_utils.py`) — the authoritative behavior.
 
 ## Prime directive: stay wire-compatible
 
@@ -40,19 +39,19 @@ match upstream. The make-or-break details — the ones that bit us:
 
 ## How to verify / maintain compatibility
 
-Parity is proven by diffing this client's output against the live Python client, byte for
-byte. After **any** change here — or whenever **upstream releases a new version** — re-run:
-
-```sh
-cargo test
-tools/oracle/run_oracle.sh <Player.log> out.jsonl      # capture Python client (local mock, sandboxed HOME)
-cargo run -p recall-core --example oracle_diff -- <Player.log> out.jsonl   # must report ALL ... byte-identical
-```
+Parity is enforced by the fixture tests in `crates/core/tests/parity.rs` (`cargo test`).
+Their expected payloads were captured byte-for-byte from the live Python client during the
+port; treat them as the wire contract. (A live "oracle" harness that diffed against a
+running Python client existed early on and was removed — the Python client is no longer
+installed here, so parity is now source-diff + fixtures.)
 
 When upstream bumps its version or changes a handler:
-1. Diff upstream `mtga_follower.py` / `api_client.py` against `/Users/fred/code/oss/17l/...`.
-2. Port the change here; update `api_client::CLIENT_VERSION` if upstream's changed.
-3. Re-capture the oracle and re-run `oracle_diff` until byte-identical again.
+1. Diff upstream `mtga_follower.py` / `api_client.py` against the reference copy at
+   `/Users/fred/code/oss/17l/...`.
+2. Port the change here; update `api_client::CLIENT_VERSION` if upstream's changed; derive
+   any new/changed expected fixture payloads from the Python source (order, null-vs-absent,
+   coercions).
+3. `cargo test`, then update the reference copy so the next upstream diff starts clean.
 
 ## Module map
 
@@ -62,7 +61,7 @@ The repo is a Cargo workspace with three crates under `crates/`:
   `config.rs` (token) · `paths.rs` (log discovery) · `follower.rs` (tailing, dispatch table,
   all handlers, game-state machine) · `api_client.rs` (endpoints, envelope, gzip, JSON) ·
   `retry.rs` · `time_parse.rs`. Each module's doc comment cites the relevant `mtga_follower.py`
-  lines. Parity tests + oracle examples live here (`tests/`, `examples/`).
+  lines. Parity tests + an offline `replay` example live here (`tests/`, `examples/`).
 - **`crates/cli`** (`recall`) — `main.rs` (CLI + processing loop). Produces the
   installable `recall` binary.
 - **`crates/desktop`** (`recall-desktop`) — a **Tauri v2 menu-bar app** reusing the core
@@ -75,7 +74,7 @@ The repo is a Cargo workspace with three crates under `crates/`:
 ## Conventions
 
 - **Do not POST to the live `api.17lands.com`** during development without explicit user
-  approval; validate against the local mock/oracle instead.
+  approval; point at the local mock (`tools/mock_server.py`) instead.
 - **Documentation is crisp and minimal.** No long preambles, no marketing fluff, no
   restating what the code shows; prefer a short table or list over paragraphs. Same for
   the justfile: only commands that encode non-obvious knowledge, never bare cargo aliases.

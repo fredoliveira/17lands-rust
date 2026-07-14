@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Removed
+- The oracle parity harness (`tools/oracle/run_oracle.sh`, the `oracle_diff` example, and
+  the `just oracle*`/`parity` recipes). It ran the brew-installed `seventeenlands`, which
+  has been this Rust client itself since 0.1.1 — so it was diffing the client against
+  itself. Parity is now maintained via the fixture tests and by diffing upstream Python
+  source changes. The local mock server moved to `tools/mock_server.py` (still used for
+  desktop dev).
+
 ## [0.2.0] - 2026-07-14
 
 ### Changed
