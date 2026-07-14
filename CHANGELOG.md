@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-14
+
 ### Changed
 - Renamed the product to **Recall** (after Ancestral Recall). The binary is now `recall`
   (was `seventeenlands`), the crates are `recall-core` / `recall` / `recall-desktop`, the
@@ -44,7 +46,8 @@ upstream `CLIENT_VERSION = "0.1.44.p"`.
 - Oracle parity tooling (`tools/oracle/`, `examples/oracle_diff.rs`) and an offline
   `replay` example.
 
-[Unreleased]: https://github.com/fredoliveira/recall/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/fredoliveira/recall/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/fredoliveira/recall/compare/v0.1.3...v0.2.0
 [0.1.2]: https://github.com/fredoliveira/recall/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/fredoliveira/recall/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/fredoliveira/recall/releases/tag/v0.1.0
