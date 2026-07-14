@@ -44,16 +44,6 @@ seventeenlands --tee http://localhost:3000
 
 This is fire-and-forget: a missing or slow sink never affects the 17Lands upload.
 
-### Running from the source code directly
-
-```sh
-# Build a release version of the CLI
-cargo build --release -p seventeenlands-rust
-
-# Start the built artifact
-./target/release/seventeenlands
-```
-
 ## Repository layout
 
 This is a Cargo workspace producing two artifacts from a shared core:
@@ -64,8 +54,23 @@ This is a Cargo workspace producing two artifacts from a shared core:
 | `seventeenlands-rust` | `crates/cli` | the `seventeenlands` CLI |
 | `seventeenlands-desktop` | `crates/desktop` | Tauri menu-bar app (see its [README](crates/desktop/README.md)) |
 
-Bare `cargo build`/`test` build the CLI + core; build the desktop app with
-`-p seventeenlands-desktop` (or `just desktop-build`).
+Bare `cargo build`/`test` build the CLI + core; the desktop app builds with
+`-p seventeenlands-desktop`.
+
+## Development
+
+Common tasks live in the [`justfile`](justfile) (`brew install just`):
+
+| Command | What it does |
+|---------|--------------|
+| `just run [ARGS]` | Build and run the CLI against the auto-detected `Player.log` |
+| `just desktop-run` | Build and run the desktop app (release; no Tauri CLI needed) |
+| `just desktop-dev` | Desktop dev loop with hot reload, pointed at a local mock API |
+| `just desktop-build` | Build the desktop bundle (`.app` + `.dmg`; needs the Tauri CLI) |
+| `just test` | Run the test suite |
+| `just lint` | Pre-commit gate: format check + clippy + tests (mirrors CI) |
+| `just parity LOG` | Byte-for-byte output parity check against the Python client |
+| `just replay LOG` | Replay a log offline, printing payloads without uploading |
 
 ## Credits & license
 

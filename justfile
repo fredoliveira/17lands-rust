@@ -1,77 +1,47 @@
-# seventeenlands-rust task runner.
-# Install just: https://github.com/casey/just  (`brew install just`)
-# List recipes: `just` or `just --list`.
+# seventeenlands-rust task runner (`brew install just`). `just` lists recipes.
+# Plain builds are just cargo: `cargo build`, `cargo test`, `cargo clean`, …
 
 # Show available recipes.
 default:
     @just --list
 
-# --- Build -----------------------------------------------------------------
+# --- Run ---------------------------------------------------------------------
 
-# Debug build.
-build:
-    cargo build
-
-# Optimized release build.
-release:
-    cargo build --release
-
-# Type-check without producing binaries (fast feedback loop).
-check:
-    cargo check
-
-# --- Run -------------------------------------------------------------------
-
-# Build and run the CLI, following the auto-detected Player.log. Extra args pass through,
-# e.g. `just run --once` or `just run -l path/to/Player.log`.
+# Extra args pass through: `just run --once`, `just run -l path/to/Player.log`.
+# Build and run the CLI, following the auto-detected Player.log.
 run *ARGS:
     cargo run -p seventeenlands-rust -- {{ARGS}}
 
-# Parse a specific log once and exit (no tailing).
-run-once LOG:
-    cargo run -p seventeenlands-rust -- --log-file {{LOG}} --once
-
-# Release run with passthrough args.
-run-release *ARGS:
-    cargo run --release -p seventeenlands-rust -- {{ARGS}}
-
-# --- Desktop app -----------------------------------------------------------
+# --- Desktop app -------------------------------------------------------------
 
 # Build and run the desktop app (release; self-contained binary, no Tauri CLI needed).
 desktop-run:
     cargo run -p seventeenlands-desktop --release
 
-# Run the Tauri desktop app in dev (point at the local mock — never the live API).
+# Needs the Tauri CLI (`cargo install tauri-cli --locked`) and the local mock so it
+# never hits the live API: `python3 tools/oracle/mock_server.py 8732 /tmp/desktop-out.jsonl`.
+# Desktop dev loop with webview hot-reload, pointed at the local mock on :8732.
 desktop-dev:
     cd crates/desktop && SEVENTEENLANDS_HOST=http://127.0.0.1:8732 cargo tauri dev
 
-# Build the desktop bundle (.app + .dmg on macOS). Needs the Tauri CLI:
-# cargo install tauri-cli --locked
+# Build the desktop bundle (.app + .dmg on macOS; needs the Tauri CLI).
 desktop-build:
     cd crates/desktop && cargo tauri build
 
-# --- Test / quality --------------------------------------------------------
+# --- Quality -----------------------------------------------------------------
 
 # Run the full test suite.
 test:
     cargo test
 
-# Format the workspace.
-fmt:
-    cargo fmt
-
-# Check formatting without modifying files (CI-style).
-fmt-check:
+# Pre-commit gate, mirroring CI: format check + clippy (all crates) + tests.
+lint:
     cargo fmt --check
-
-# Lint with clippy, treating warnings as errors.
-clippy:
     cargo clippy --all-targets -- -D warnings
+    cargo clippy -p seventeenlands-desktop --all-targets -- -D warnings
+    cargo test
 
-# Format check + clippy + tests, the pre-commit gate.
-lint: fmt-check clippy test
-
-# --- Oracle parity (see CLAUDE.md) -----------------------------------------
+# --- Oracle parity (see CLAUDE.md) -------------------------------------------
 
 # Capture the Python oracle's output for a log into OUT (local mock, sandboxed HOME).
 oracle LOG OUT="out.jsonl":
@@ -84,12 +54,6 @@ oracle-diff LOG OUT="out.jsonl":
 # Full parity check: capture the oracle, then diff against it.
 parity LOG OUT="out.jsonl": (oracle LOG OUT) (oracle-diff LOG OUT)
 
-# Replay a log through the client offline (the replay example).
+# Replay a log through the client offline (prints payloads, uploads nothing).
 replay LOG:
     cargo run -p seventeenlands-core --example replay -- {{LOG}}
-
-# --- Housekeeping ----------------------------------------------------------
-
-# Remove build artifacts.
-clean:
-    cargo clean

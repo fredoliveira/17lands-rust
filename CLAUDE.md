@@ -75,6 +75,9 @@ The repo is a Cargo workspace with three crates under `crates/`:
 
 - **Do not POST to the live `api.17lands.com`** during development without explicit user
   approval; validate against the local mock/oracle instead.
+- **Documentation is crisp and minimal.** No long preambles, no marketing fluff, no
+  restating what the code shows; prefer a short table or list over paragraphs. Same for
+  the justfile: only commands that encode non-obvious knowledge, never bare cargo aliases.
 - Deviations from upstream are intentional and limited: token at the
   platform config dir (migrated from `~/.mtga_follower.ini`), no GUI prompts, no startup
   version check, no server-side error reporting, stdout/stderr logging only.
