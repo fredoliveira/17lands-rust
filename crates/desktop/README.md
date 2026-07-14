@@ -23,7 +23,7 @@ Apple-notarized, so on first launch open it via right-click → Open (or
 | `src/state.rs` | `AppState`: follower thread + cancellation, resolved log path, shared upload status |
 | `src/observer.rs` | `ObservingSubmitter` — records endpoint/time/count without altering POSTs |
 | `src/logbridge.rs` | Global `log::Log` sink → ring buffer + `log-line` webview events |
-| `src/commands.rs` | `#[tauri::command]` bridge (token, status, start/stop, log path) |
+| `src/commands.rs` | `#[tauri::command]` bridge (token, status, log path) |
 | `ui/` | Vanilla HTML/JS/CSS frontend (no bundler; uses `withGlobalTauri`) |
 
 ## Develop

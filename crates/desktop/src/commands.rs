@@ -27,16 +27,6 @@ pub fn get_status(state: State<AppState>) -> StatusDto {
 }
 
 #[tauri::command]
-pub fn start_following(state: State<AppState>) -> Result<(), String> {
-    state.start()
-}
-
-#[tauri::command]
-pub fn stop_following(state: State<AppState>) {
-    state.stop();
-}
-
-#[tauri::command]
 pub fn recent_logs() -> Vec<LogLine> {
     logbridge::recent()
 }

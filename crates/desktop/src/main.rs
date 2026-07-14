@@ -9,10 +9,14 @@ mod state;
 
 use tauri::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{AppHandle, Emitter, Manager, WindowEvent};
+use tauri::{AppHandle, Emitter, Manager, WindowEvent, Wry};
 
 use seventeenlands_core::{api_client, config};
 use state::AppState;
+
+/// Handle to the disabled tray-menu status line ("Working" / "Stopped" / "Missing token"),
+/// kept in managed state so it can be re-rendered as the follower's state changes.
+struct TrayStatusItem(MenuItem<Wry>);
 
 fn main() {
     // Install the log->webview bridge before anything logs.
@@ -29,8 +33,6 @@ fn main() {
             commands::token_present,
             commands::save_token,
             commands::get_status,
-            commands::start_following,
-            commands::stop_following,
             commands::recent_logs,
             commands::set_log_path,
         ])
@@ -61,6 +63,15 @@ fn main() {
                 }
                 let _ = app.emit("show-settings", ());
             }
+            update_tray_status(app.handle());
+
+            // Keep the tray status line current (token saved, follower stopped/died, …).
+            // Same 2s cadence as the webview's status poll.
+            let handle = app.handle().clone();
+            std::thread::spawn(move || loop {
+                std::thread::sleep(std::time::Duration::from_secs(2));
+                update_tray_status(&handle);
+            });
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -75,12 +86,27 @@ fn main() {
 }
 
 fn build_tray(app: &AppHandle) -> tauri::Result<()> {
+    // Disabled header: app name + version, and a live status line.
+    let title = MenuItem::with_id(
+        app,
+        "title",
+        format!("17l mac v{}", env!("CARGO_PKG_VERSION")),
+        false,
+        None::<&str>,
+    )?;
+    let status = MenuItem::with_id(app, "status", tray_status_text(app), false, None::<&str>)?;
+    let header_sep = PredefinedMenuItem::separator(app)?;
+
     let show = MenuItem::with_id(app, "show", "Show Log Window", true, None::<&str>)?;
-    let toggle = MenuItem::with_id(app, "toggle", "Start / Stop Following", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
     let sep = PredefinedMenuItem::separator(app)?;
     let quit = MenuItem::with_id(app, "quit", "Quit 17Lands", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show, &toggle, &settings, &sep, &quit])?;
+    let menu = Menu::with_items(
+        app,
+        &[&title, &status, &header_sep, &show, &settings, &sep, &quit],
+    )?;
+
+    app.manage(TrayStatusItem(status));
 
     // Standard macOS menu-bar behavior: a left-click opens the menu. The menu's
     // "Show Log Window" item keeps the window reachable.
@@ -105,15 +131,6 @@ fn handle_menu(app: &AppHandle, event: MenuEvent) {
             show_window(app);
             let _ = app.emit("show-settings", ());
         }
-        "toggle" => {
-            let state = app.state::<AppState>();
-            if state.is_following() {
-                state.stop();
-            } else {
-                let _ = state.start();
-            }
-            let _ = app.emit("status-changed", ());
-        }
         "quit" => {
             app.state::<AppState>().stop();
             app.exit(0);
@@ -126,5 +143,24 @@ fn show_window(app: &AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.show();
         let _ = w.set_focus();
+    }
+}
+
+fn tray_status_text(app: &AppHandle) -> &'static str {
+    if config::read_toml_token().is_none() {
+        "Missing token"
+    } else if app.state::<AppState>().is_following() {
+        "Working"
+    } else {
+        "Stopped"
+    }
+}
+
+/// Re-render the tray status line. Safe from any thread — Tauri menu setters
+/// dispatch to the main thread internally.
+fn update_tray_status(app: &AppHandle) {
+    let text = tray_status_text(app);
+    if let Some(item) = app.try_state::<TrayStatusItem>() {
+        let _ = item.0.set_text(text);
     }
 }
