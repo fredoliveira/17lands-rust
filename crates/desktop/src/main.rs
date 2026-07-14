@@ -11,7 +11,7 @@ use tauri::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager, WindowEvent, Wry};
 
-use seventeenlands_core::{api_client, config};
+use recall_core::{api_client, config};
 use state::AppState;
 
 /// Handle to the disabled tray-menu status line ("Working" / "Stopped" / "Missing token"),
@@ -22,10 +22,10 @@ fn main() {
     // Install the log->webview bridge before anything logs.
     logbridge::WebviewLogger::install();
 
-    // Dev safety: never POST to the live API during development. Set SEVENTEENLANDS_HOST
+    // Dev safety: never POST to the live API during development. Set RECALL_HOST
     // (e.g. the local oracle mock) to override the default live host.
-    let host = std::env::var("SEVENTEENLANDS_HOST")
-        .unwrap_or_else(|_| api_client::DEFAULT_HOST.to_string());
+    let host =
+        std::env::var("RECALL_HOST").unwrap_or_else(|_| api_client::DEFAULT_HOST.to_string());
 
     tauri::Builder::default()
         .manage(AppState::new(host))
@@ -39,10 +39,10 @@ fn main() {
         .setup(|app| {
             logbridge::attach(app.handle().clone());
 
-            // Show the crate version in the window title (e.g. "17Lands v0.1.1"). Done at
+            // Show the crate version in the window title (e.g. "Recall v0.1.1"). Done at
             // runtime since a static tauri.conf.json title can't interpolate the version.
             if let Some(w) = app.get_webview_window("main") {
-                let _ = w.set_title(&format!("17Lands v{}", env!("CARGO_PKG_VERSION")));
+                let _ = w.set_title(&format!("Recall v{}", env!("CARGO_PKG_VERSION")));
             }
 
             // Menu-bar app: no dock icon on macOS.
@@ -82,7 +82,7 @@ fn main() {
             }
         })
         .run(tauri::generate_context!())
-        .expect("error while running 17Lands desktop app");
+        .expect("error while running Recall desktop app");
 }
 
 fn build_tray(app: &AppHandle) -> tauri::Result<()> {
@@ -90,7 +90,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let title = MenuItem::with_id(
         app,
         "title",
-        format!("17l mac v{}", env!("CARGO_PKG_VERSION")),
+        format!("Recall v{}", env!("CARGO_PKG_VERSION")),
         false,
         None::<&str>,
     )?;
@@ -100,7 +100,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let show = MenuItem::with_id(app, "show", "Show Log Window", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
     let sep = PredefinedMenuItem::separator(app)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit 17Lands", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit Recall", true, None::<&str>)?;
     let menu = Menu::with_items(
         app,
         &[&title, &status, &header_sep, &show, &settings, &sep, &quit],
@@ -111,7 +111,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     // Standard macOS menu-bar behavior: a left-click opens the menu. The menu's
     // "Show Log Window" item keeps the window reachable.
     let mut builder = TrayIconBuilder::with_id("main")
-        .tooltip(format!("17Lands v{}", env!("CARGO_PKG_VERSION")))
+        .tooltip(format!("Recall v{}", env!("CARGO_PKG_VERSION")))
         .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(handle_menu);

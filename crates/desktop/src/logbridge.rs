@@ -56,7 +56,7 @@ pub fn recent() -> Vec<LogLine> {
 
 /// Keep our own crates' chatter; drop noisy debug from third-party deps (ureq, etc.).
 fn is_ours(target: &str) -> bool {
-    target.starts_with("seventeenlands") || target.starts_with("17l")
+    target.starts_with("recall")
 }
 
 impl Log for WebviewLogger {
@@ -75,7 +75,7 @@ impl Log for WebviewLogger {
             level: record.level().to_string(),
             target: target.to_string(),
             msg: record.args().to_string(),
-            chatter: target == seventeenlands_core::follower::CHATTER,
+            chatter: target == recall_core::follower::CHATTER,
         };
 
         if let Ok(mut buf) = BUFFER.lock() {

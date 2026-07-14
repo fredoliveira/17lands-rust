@@ -43,19 +43,19 @@ jobs:
           dmg="$(find target/universal-apple-darwin/release/bundle/dmg -name '*.dmg' | head -n1)"
           test -n "$dmg" || { echo "no .dmg produced"; exit 1; }
           mkdir -p dist
-          cp "$dmg" "dist/17Lands-universal.dmg"
+          cp "$dmg" "dist/Recall-universal.dmg"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: seventeenlands-desktop-universal
-          path: dist/17Lands-universal.dmg
+          name: recall-desktop-universal
+          path: dist/Recall-universal.dmg
 
       - name: Attach to release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/17Lands-universal.dmg
+          files: dist/Recall-universal.dmg
 
   # Push the cask bump to fredoliveira/homebrew-tap. Needs a TAP_PUSH_TOKEN secret
   # (fine-grained PAT with contents:write on the tap repo); skips quietly if unset.
@@ -69,7 +69,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: seventeenlands-desktop-universal
+          name: recall-desktop-universal
           path: dist
 
       - name: Regenerate cask and push to the tap
@@ -81,15 +81,15 @@ jobs:
             exit 0
           fi
           version="${GITHUB_REF_NAME#v}"
-          sha="$(shasum -a 256 dist/17Lands-universal.dmg | cut -d' ' -f1)"
+          sha="$(shasum -a 256 dist/Recall-universal.dmg | cut -d' ' -f1)"
           git clone "https://x-access-token:${TAP_PUSH_TOKEN}@github.com/fredoliveira/homebrew-tap.git" tap
           mkdir -p tap/Casks
           sh packaging/homebrew/generate.sh cask "$version" "$sha" \
-            > tap/Casks/seventeenlands-desktop.rb
+            > tap/Casks/recall-desktop.rb
           cd tap
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/seventeenlands-desktop.rb
-          git commit -m "seventeenlands-desktop ${version}"
+          git add Casks/recall-desktop.rb
+          git commit -m "recall-desktop ${version}"
           # The CLI workflow may push its formula bump concurrently; rebase and retry.
           for _ in 1 2 3; do git push && break; git pull --rebase; done

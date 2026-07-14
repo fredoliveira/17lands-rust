@@ -1,5 +1,5 @@
 [package]
-name = "seventeenlands-core"
+name = "recall-core"
 description = "Wire-compatible core for the 17Lands MTGA log client (follower, parser, REST envelope)"
 edition = "2024"
 version.workspace = true
@@ -9,7 +9,7 @@ authors.workspace = true
 rust-version.workspace = true
 
 [lib]
-name = "seventeenlands_core"
+name = "recall_core"
 path = "src/lib.rs"
 
 [dependencies]

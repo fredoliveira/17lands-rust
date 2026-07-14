@@ -13,8 +13,8 @@ use std::collections::BTreeMap;
 
 use serde_json::Value;
 
-use seventeenlands_core::api_client::{RecordingSubmitter, to_python_json_string};
-use seventeenlands_core::follower::Follower;
+use recall_core::api_client::{RecordingSubmitter, to_python_json_string};
+use recall_core::follower::Follower;
 
 fn first_diff_path(a: &Value, b: &Value, path: &str) -> Option<String> {
     match (a, b) {

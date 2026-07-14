@@ -1,4 +1,4 @@
-# 17Lands desktop
+# Recall desktop
 
 A Tauri v2 menu-bar / notification-area app that wraps the rust log follower core
 The follower runs on a background thread, shows a live log feed in an on-demand window, 
@@ -7,12 +7,12 @@ and captures the 17Lands token through a GUI instead of the CLI's stdin prompt.
 ## Install
 
 ```sh
-brew install --cask fredoliveira/tap/seventeenlands-desktop
+brew install --cask fredoliveira/tap/recall-desktop
 ```
 
 The release workflow attaches a universal `.dmg` (Intel + Apple Silicon). The app is not yet
 Apple-notarized, so on first launch open it via right-click → Open (or
-`xattr -dr com.apple.quarantine "/Applications/17Lands.app"`). See
+`xattr -dr com.apple.quarantine "/Applications/Recall.app"`). See
 [`packaging/homebrew/README.md`](../../packaging/homebrew/README.md).
 
 ## Architecture
@@ -31,12 +31,12 @@ Apple-notarized, so on first launch open it via right-click → Open (or
 ```sh
 # Never POST to the live API during dev — point at the local oracle mock.
 python3 ../../tools/oracle/mock_server.py 8732 /tmp/desktop-out.jsonl &
-SEVENTEENLANDS_HOST=http://127.0.0.1:8732 cargo tauri dev
+RECALL_HOST=http://127.0.0.1:8732 cargo tauri dev
 ```
 
 Dev/test env overrides (parallel to each other):
-- `SEVENTEENLANDS_HOST` — upload host (default: live API). **Always set this to the mock in dev.**
-- `SEVENTEENLANDS_LOG` — pin the followed log file (e.g. `../core/tests/fixtures/gaps.log`) so the
+- `RECALL_HOST` — upload host (default: live API). **Always set this to the mock in dev.**
+- `RECALL_LOG` — pin the followed log file (e.g. `../core/tests/fixtures/gaps.log`) so the
   app can run headlessly without a real `Player.log`.
 
 ## Build from source
@@ -55,8 +55,8 @@ Prerequisites:
 self-contained). From the repo root:
 
 ```sh
-cargo build -p seventeenlands-desktop --release
-./target/release/seventeenlands-desktop        # launches the menu-bar app
+cargo build -p recall-desktop --release
+./target/release/recall-desktop        # launches the menu-bar app
 ```
 
 Or via the task runner: `just desktop-run`.

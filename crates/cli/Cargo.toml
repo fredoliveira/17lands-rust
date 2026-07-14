@@ -1,8 +1,7 @@
-# The installable CLI crate. Keeps the name `seventeenlands-rust` so
-# `cargo install --git <repo> seventeenlands-rust` keeps working and produces `seventeenlands`.
+# The installable CLI crate: `cargo install --git <repo> recall` produces the `recall` binary.
 [package]
-name = "seventeenlands-rust"
-description = "Rust port of the 17Lands MTGA log client (uploads MTG Arena data to 17lands.com)"
+name = "recall"
+description = "Recall — Rust port of the 17Lands MTGA log client (uploads MTG Arena data to 17lands.com)"
 edition = "2024"
 readme = "../../README.md"
 keywords = ["mtg", "mtga", "17lands", "magic", "draft"]
@@ -14,11 +13,11 @@ authors.workspace = true
 rust-version.workspace = true
 
 [[bin]]
-name = "seventeenlands"
+name = "recall"
 path = "src/main.rs"
 
 [dependencies]
-seventeenlands-core = { path = "../core" }
+recall-core = { path = "../core" }
 # CLI argument parsing.
 clap = { version = "4", features = ["derive"] }
 # Console logging (clean + verbose formats); not part of the wire contract.

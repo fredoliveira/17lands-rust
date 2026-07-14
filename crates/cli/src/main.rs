@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// seventeenlands-rust — a Rust port of the 17Lands MTG Arena log client.
+// recall — a Rust port of the 17Lands MTG Arena log client.
 // Copyright (C) 2026 Fred Oliveira <fred@helloform.com>
 //
 // This program is a derivative work of mtga-log-client
@@ -16,7 +16,7 @@
 // Public License along with this program. If not, see
 // <https://www.gnu.org/licenses/>.
 
-//! 17Lands MTGA log client — Rust port.
+//! Recall — Rust port of the 17Lands MTGA log client.
 //!
 //! Drop-in replacement for the Python `seventeenlands` client. This is the thin CLI
 //! wrapper: it resolves the token, sets up logging, and runs the processing loop.
@@ -26,11 +26,11 @@ use std::path::{Path, PathBuf};
 
 use clap::Parser;
 
-use seventeenlands_core::api_client::{self, ApiClient, Submitter};
-use seventeenlands_core::config;
-use seventeenlands_core::follower::{self, Follower};
-use seventeenlands_core::paths;
-use seventeenlands_core::tee::{LocalSink, Tee};
+use recall_core::api_client::{self, ApiClient, Submitter};
+use recall_core::config;
+use recall_core::follower::{self, Follower};
+use recall_core::paths;
+use recall_core::tee::{LocalSink, Tee};
 
 /// CLI flags, mirroring the Python argparse interface.
 #[derive(Parser, Debug)]
