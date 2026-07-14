@@ -4,7 +4,7 @@
 //!
 //! Resolution order (first valid UUID-v4 wins):
 //!   1. `--token` flag
-//!   2. `~/.config/17l/config.toml` (`token` key)
+//!   2. `~/.config/recall/config.toml` (`token` key)
 //!   3. legacy `~/.mtga_follower.ini` `[client] token` — migrate to TOML if found
 //!   4. interactive stdin prompt; on success, write to the TOML config
 //!
@@ -15,7 +15,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-/// Contents of `~/.config/17l/config.toml`.
+/// Contents of `~/.config/recall/config.toml`.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     pub token: Option<String>,
@@ -24,11 +24,11 @@ pub struct Config {
 const TOKEN_ENTRY_MESSAGE: &str = "Please enter your client token from 17lands.com/account: ";
 const TOKEN_INVALID_MESSAGE: &str = "That token is invalid. Please specify a valid client token. See 17lands.com/getting_started for more details.";
 
-/// New primary config location: `<config_dir>/17l/config.toml`.
+/// New primary config location: `<config_dir>/recall/config.toml`.
 ///
 /// Uses `dirs::config_dir()` (respects `$XDG_CONFIG_HOME`).
 pub fn config_path() -> Option<PathBuf> {
-    dirs::config_dir().map(|d| d.join("17l").join("config.toml"))
+    dirs::config_dir().map(|d| d.join("recall").join("config.toml"))
 }
 
 /// Legacy Python config: `~/.mtga_follower.ini`.
@@ -78,7 +78,7 @@ pub fn resolve_token(flag: Option<&str>) -> String {
         log::warn!("Ignoring --token flag: not a valid UUID");
     }
 
-    // 2. ~/.config/17l/config.toml.
+    // 2. ~/.config/recall/config.toml.
     if let Some(t) = read_toml_token() {
         return t;
     }
@@ -96,7 +96,7 @@ pub fn resolve_token(flag: Option<&str>) -> String {
     t
 }
 
-/// Read + validate the `token` key from `<config_dir>/17l/config.toml`.
+/// Read + validate the `token` key from `<config_dir>/recall/config.toml`.
 ///
 /// Public so the desktop GUI can check for / load the saved token without going through
 /// [`resolve_token`], which falls back to a blocking stdin prompt unsuitable for a GUI.
@@ -138,7 +138,7 @@ fn read_legacy_ini_token() -> Option<String> {
     None
 }
 
-/// Write the token to `<config_dir>/17l/config.toml`, creating the directory.
+/// Write the token to `<config_dir>/recall/config.toml`, creating the directory.
 ///
 /// Public so the desktop GUI can persist a token captured in its settings dialog, writing
 /// to the same file the CLI reads.

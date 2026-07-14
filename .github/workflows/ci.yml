@@ -56,7 +56,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Clippy (desktop)
-        run: cargo clippy -p seventeenlands-desktop --all-targets -- -D warnings
+        run: cargo clippy -p recall-desktop --all-targets -- -D warnings
 
       - name: Build desktop
-        run: cargo build -p seventeenlands-desktop --release
+        run: cargo build -p recall-desktop --release

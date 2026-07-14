@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 use serde::Serialize;
 use serde_json::Value;
 
-use seventeenlands_core::api_client::{ApiClient, Submitter};
+use recall_core::api_client::{ApiClient, Submitter};
 
 /// Snapshot of upload activity, shared with the UI/tray.
 #[derive(Default, Clone, Serialize)]

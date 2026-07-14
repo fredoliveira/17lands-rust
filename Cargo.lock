@@ -2576,6 +2576,47 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
 
 [[package]]
+name = "recall"
+version = "0.1.3"
+dependencies = [
+ "anstyle",
+ "chrono",
+ "clap",
+ "env_logger",
+ "log",
+ "recall-core",
+]
+
+[[package]]
+name = "recall-core"
+version = "0.1.3"
+dependencies = [
+ "chrono",
+ "dirs 5.0.1",
+ "flate2",
+ "log",
+ "regex",
+ "serde",
+ "serde_json",
+ "toml 0.8.23",
+ "ureq",
+ "uuid",
+]
+
+[[package]]
+name = "recall-desktop"
+version = "0.1.3"
+dependencies = [
+ "chrono",
+ "log",
+ "recall-core",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3011,47 +3052,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "170fb83ab34de17dc69aa7c67482b22218ddb85da56546f9bd6b929e32a05930"
 dependencies = [
  "stable_deref_trait",
-]
-
-[[package]]
-name = "seventeenlands-core"
-version = "0.1.3"
-dependencies = [
- "chrono",
- "dirs 5.0.1",
- "flate2",
- "log",
- "regex",
- "serde",
- "serde_json",
- "toml 0.8.23",
- "ureq",
- "uuid",
-]
-
-[[package]]
-name = "seventeenlands-desktop"
-version = "0.1.3"
-dependencies = [
- "chrono",
- "log",
- "serde",
- "serde_json",
- "seventeenlands-core",
- "tauri",
- "tauri-build",
-]
-
-[[package]]
-name = "seventeenlands-rust"
-version = "0.1.3"
-dependencies = [
- "anstyle",
- "chrono",
- "clap",
- "env_logger",
- "log",
- "seventeenlands-core",
 ]
 
 [[package]]

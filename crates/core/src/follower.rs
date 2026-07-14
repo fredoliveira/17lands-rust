@@ -30,7 +30,7 @@ const SLEEP_TIME: Duration = Duration::from_millis(500);
 /// collection/ongoing-event polling). The console formatter (`main::init_logging`) renders
 /// these fully dimmed so they recede behind real events; the `--verbose` developer format
 /// still shows them in full. Purely cosmetic — no effect on the wire payload.
-pub const CHATTER: &str = "17l::chatter";
+pub const CHATTER: &str = "recall::chatter";
 
 // ---------------------------------------------------------------------------------------
 // Regexes (port of mtga_follower.py:132-143). Python `.match` is start-anchored; patterns

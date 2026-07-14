@@ -8,9 +8,9 @@ use std::thread::JoinHandle;
 
 use serde::Serialize;
 
-use seventeenlands_core::api_client::ApiClient;
-use seventeenlands_core::follower::Follower;
-use seventeenlands_core::{config, paths};
+use recall_core::api_client::ApiClient;
+use recall_core::follower::Follower;
+use recall_core::{config, paths};
 
 use crate::observer::{ObservingSubmitter, UploadStatus};
 
@@ -45,9 +45,9 @@ pub struct StatusDto {
 
 impl AppState {
     pub fn new(host: String) -> Self {
-        // Dev/test override (parallels SEVENTEENLANDS_HOST): pin the followed log file so the
+        // Dev/test override (parallels RECALL_HOST): pin the followed log file so the
         // app can be exercised headlessly against a fixture log.
-        let log_path = std::env::var("SEVENTEENLANDS_LOG").ok().map(PathBuf::from);
+        let log_path = std::env::var("RECALL_LOG").ok().map(PathBuf::from);
         Self {
             host,
             cancel: Arc::new(AtomicBool::new(false)),
@@ -107,7 +107,7 @@ impl AppState {
         let read_offset = self.read_offset.clone();
 
         let handle = std::thread::Builder::new()
-            .name("17l-follower".into())
+            .name("recall-follower".into())
             .spawn(move || {
                 following.store(true, Ordering::Relaxed);
                 let api = ObservingSubmitter::new(ApiClient::new(host.clone()), upload);

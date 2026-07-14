@@ -1,6 +1,8 @@
-# 17Lands, but in rust!
+# Recall
 
-[![CI](https://github.com/fredoliveira/17lands-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/fredoliveira/17lands-rust/actions/workflows/ci.yml)
+*Named after [Ancestral Recall](https://scryfall.com/search?q=!%22Ancestral+Recall%22) — it draws your games and sends them to [17Lands](https://www.17lands.com).*
+
+[![CI](https://github.com/fredoliveira/recall/actions/workflows/ci.yml/badge.svg)](https://github.com/fredoliveira/recall/actions/workflows/ci.yml)
 
 A Rust port of the [17Lands](https://www.17lands.com) MTG Arena log client. It tails
 Arena's `Player.log`, parses gameplay events, and uploads them to the 17Lands REST API.
@@ -14,20 +16,20 @@ from wanting a single binary distribution that requires no old python dependenci
 
 ```sh
 # CLI via Homebrew (macOS/Linux):
-brew install fredoliveira/tap/seventeenlands-rust
+brew install fredoliveira/tap/recall
 
 # Desktop menu-bar app via Homebrew (macOS):
-brew install --cask fredoliveira/tap/seventeenlands-desktop
+brew install --cask fredoliveira/tap/recall-desktop
 
 # CLI from source (builds and installs the binary onto your PATH):
-cargo install --git https://github.com/fredoliveira/17lands-rust seventeenlands-rust
+cargo install --git https://github.com/fredoliveira/recall recall
 ```
 
 ## Running
 
 ```sh
 # Assuming a normal installation, run this in your terminal
-seventeenlands
+recall
 ```
 
 **Detailed Logs** must be enabled in MTGA (gear → Account → "Detailed Logs") for game data
@@ -39,7 +41,7 @@ to be captured.
 companion), as JSON at `<URL>/<event>` — for example `http://localhost:3000/add_human_draft_pack`:
 
 ```sh
-seventeenlands --tee http://localhost:3000
+recall --tee http://localhost:3000
 ```
 
 This is fire-and-forget: a missing or slow sink never affects the 17Lands upload.
@@ -50,12 +52,12 @@ This is a Cargo workspace producing two artifacts from a shared core:
 
 | Crate | Path | Artifact |
 |-------|------|----------|
-| `seventeenlands-core` | `crates/core` | shared library (follower, parser, REST envelope) |
-| `seventeenlands-rust` | `crates/cli` | the `seventeenlands` CLI |
-| `seventeenlands-desktop` | `crates/desktop` | Tauri menu-bar app (see its [README](crates/desktop/README.md)) |
+| `recall-core` | `crates/core` | shared library (follower, parser, REST envelope) |
+| `recall` | `crates/cli` | the `recall` CLI |
+| `recall-desktop` | `crates/desktop` | Tauri menu-bar app (see its [README](crates/desktop/README.md)) |
 
 Bare `cargo build`/`test` build the CLI + core; the desktop app builds with
-`-p seventeenlands-desktop`.
+`-p recall-desktop`.
 
 ## Development
 

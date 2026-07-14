@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// seventeenlands-rust — a Rust port of the 17Lands MTG Arena log client.
+// recall — a Rust port of the 17Lands MTG Arena log client.
 // Copyright (C) 2026 Fred Oliveira <fred@helloform.com>
 //
 // This program is a derivative work of mtga-log-client
@@ -16,7 +16,7 @@
 // Public License along with this program. If not, see
 // <https://www.gnu.org/licenses/>.
 
-//! 17Lands MTGA log client — Rust port (library crate).
+//! Recall — Rust port of the 17Lands MTGA log client (library crate).
 //!
 //! Drop-in replacement for the Python `seventeenlands` client. The `main` binary is a thin
 //! wrapper over this crate; the modules are public so the integration tests in `tests/`

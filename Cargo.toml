@@ -1,9 +1,9 @@
-# Virtual workspace. Two shipped artifacts — the `seventeenlands` CLI (`crates/cli`) and the
+# Virtual workspace. Two shipped artifacts — the `recall` CLI (`crates/cli`) and the
 # Tauri desktop app (`crates/desktop`) — share the wire-compatible core (`crates/core`).
 #
 # `default-members` is the CLI + core only, so bare `cargo build/test/clippy` (and CI) skip the
 # desktop crate, which needs a system webview toolkit (webkit2gtk on Linux). Build it explicitly
-# with `-p seventeenlands-desktop` or via the desktop CI job.
+# with `-p recall-desktop` or via the desktop CI job.
 [workspace]
 resolver = "2"
 members = ["crates/core", "crates/cli", "crates/desktop"]
@@ -13,6 +13,6 @@ default-members = ["crates/core", "crates/cli"]
 [workspace.package]
 version = "0.1.3"
 license = "GPL-3.0-only"
-repository = "https://github.com/fredoliveira/17lands-rust"
+repository = "https://github.com/fredoliveira/recall"
 authors = ["Fred Oliveira <fred@helloform.com>"]
 rust-version = "1.85"
